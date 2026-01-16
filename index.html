@@ -1,29 +1,130 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>City Builder + Boss Battle (States & Capitals)</title>
+  <title>Blocky States & Capitals Quest</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>City Builder + Boss Battle</h1>
+  <div class="skyline"></div>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon">⛏️</span>
+        <div>
+          <div class="title">Blocky States Quest</div>
+          <div class="subtitle">Capitals • City Builder • Boss Battles</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-panel="quiz">Quiz</button>
+        <button class="nav-btn" data-panel="city">City</button>
+        <button class="nav-btn" data-panel="boss">Boss</button>
+        <button class="nav-btn" data-panel="shop">Shop</button>
+        <button class="nav-btn" data-panel="settings">Settings</button>
+      </nav>
+      <div class="top-actions">
+        <button id="soundToggle" class="btn small">Sound: On</button>
+      </div>
+    </header>
 
-  <div id="hud">
-    <div>Coins: <span id="coins">0</span></div>
-    <div>Correct Streak: <span id="streak">0</span></div>
-    <div>Boss: <span id="boss">None</span> | Boss HP: <span id="bossHp">0</span></div>
-    <div>You HP: <span id="youHp">3</span></div>
+    <section class="status-bar">
+      <div class="status-tile">
+        <span class="label">Coins</span>
+        <span id="coins" class="value">0</span>
+      </div>
+      <div class="status-tile">
+        <span class="label">Streak</span>
+        <span id="streak" class="value">0</span>
+      </div>
+      <div class="status-tile">
+        <span class="label">Hints</span>
+        <span id="hintTokens" class="value">0</span>
+      </div>
+      <div class="status-tile">
+        <span class="label">You HP</span>
+        <div id="youHearts" class="hearts"></div>
+      </div>
+      <div class="status-tile">
+        <span class="label">Boss</span>
+        <div id="bossName" class="value">None</div>
+        <div id="bossHearts" class="hearts"></div>
+      </div>
+    </section>
+
+    <main class="panels">
+      <section id="panel-quiz" class="panel active">
+        <div class="panel-header">
+          <h2>Quiz Time</h2>
+          <div class="panel-actions">
+            <button id="hintBtn" class="btn">Use Hint</button>
+          </div>
+        </div>
+        <div class="quiz-card" id="quizCard">
+          <div id="question" class="question">Loading…</div>
+          <div id="choices" class="choices"></div>
+          <div id="typeAnswer" class="type-answer hidden">
+            <input id="answerInput" type="text" placeholder="Type your answer" />
+            <button id="submitAnswer" class="btn">Submit</button>
+          </div>
+          <p id="hintMessage" class="hint-message"></p>
+          <p id="result" class="result"></p>
+        </div>
+      </section>
+
+      <section id="panel-city" class="panel">
+        <div class="panel-header">
+          <h2>Your City</h2>
+          <div class="panel-actions">
+            <div class="selected-building" id="selectedBuilding">Select a building in the Shop.</div>
+          </div>
+        </div>
+        <p class="panel-description">Build mode: choose a structure in the Shop, then click a tile to place it.</p>
+        <div id="city" class="city-grid"></div>
+      </section>
+
+      <section id="panel-boss" class="panel">
+        <div class="panel-header">
+          <h2>Boss Battle</h2>
+        </div>
+        <div class="boss-card">
+          <div class="boss-name" id="bossTitle">No boss yet.</div>
+          <div class="boss-flavor" id="bossFlavor">Keep your streak to summon a regional boss!</div>
+          <div class="boss-attack" id="bossAttack">Boss attacks will show here.</div>
+        </div>
+      </section>
+
+      <section id="panel-shop" class="panel">
+        <div class="panel-header">
+          <h2>Shop</h2>
+          <div class="panel-actions">
+            <span class="panel-description">Pick a building to enter build mode.</span>
+          </div>
+        </div>
+        <div id="shop" class="shop-grid"></div>
+      </section>
+
+      <section id="panel-settings" class="panel">
+        <div class="panel-header">
+          <h2>Settings</h2>
+        </div>
+        <div class="settings-grid">
+          <label class="setting">
+            <span>Difficulty</span>
+            <select id="difficultySelect">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+          <button id="resetGame" class="btn danger">Reset Game</button>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <div id="quiz">
-    <h2 id="question">Loading…</h2>
-    <div id="choices"></div>
-    <p id="result"></p>
-  </div>
-
-  <h2>Your City (click tiles to build)</h2>
-  <div id="city"></div>
+  <div id="floatLayer" class="float-layer"></div>
 
   <script src="app.js"></script>
 </body>

@@ -1,51 +1,304 @@
-// Minimal starter: quiz -> coins -> build city -> boss every 10 correct
+const STORAGE_KEY = "blockyStatesQuest";
+const gridSize = 6;
 
 const STATES = [
-  { state: "Idaho", capital: "Boise", region: "West" },
-  { state: "Utah", capital: "Salt Lake City", region: "West" },
+  { state: "Alabama", capital: "Montgomery", region: "South" },
+  { state: "Alaska", capital: "Juneau", region: "West" },
+  { state: "Arizona", capital: "Phoenix", region: "West" },
+  { state: "Arkansas", capital: "Little Rock", region: "South" },
   { state: "California", capital: "Sacramento", region: "West" },
-  { state: "Texas", capital: "Austin", region: "South" },
+  { state: "Colorado", capital: "Denver", region: "West" },
+  { state: "Connecticut", capital: "Hartford", region: "Northeast" },
+  { state: "Delaware", capital: "Dover", region: "South" },
   { state: "Florida", capital: "Tallahassee", region: "South" },
+  { state: "Georgia", capital: "Atlanta", region: "South" },
+  { state: "Hawaii", capital: "Honolulu", region: "West" },
+  { state: "Idaho", capital: "Boise", region: "West" },
+  { state: "Illinois", capital: "Springfield", region: "Midwest" },
+  { state: "Indiana", capital: "Indianapolis", region: "Midwest" },
+  { state: "Iowa", capital: "Des Moines", region: "Midwest" },
+  { state: "Kansas", capital: "Topeka", region: "Midwest" },
+  { state: "Kentucky", capital: "Frankfort", region: "South" },
+  { state: "Louisiana", capital: "Baton Rouge", region: "South" },
+  { state: "Maine", capital: "Augusta", region: "Northeast" },
+  { state: "Maryland", capital: "Annapolis", region: "South" },
+  { state: "Massachusetts", capital: "Boston", region: "Northeast" },
+  { state: "Michigan", capital: "Lansing", region: "Midwest" },
+  { state: "Minnesota", capital: "Saint Paul", region: "Midwest" },
+  { state: "Mississippi", capital: "Jackson", region: "South" },
+  { state: "Missouri", capital: "Jefferson City", region: "Midwest" },
+  { state: "Montana", capital: "Helena", region: "West" },
+  { state: "Nebraska", capital: "Lincoln", region: "Midwest" },
+  { state: "Nevada", capital: "Carson City", region: "West" },
+  { state: "New Hampshire", capital: "Concord", region: "Northeast" },
+  { state: "New Jersey", capital: "Trenton", region: "Northeast" },
+  { state: "New Mexico", capital: "Santa Fe", region: "West" },
   { state: "New York", capital: "Albany", region: "Northeast" },
+  { state: "North Carolina", capital: "Raleigh", region: "South" },
+  { state: "North Dakota", capital: "Bismarck", region: "Midwest" },
   { state: "Ohio", capital: "Columbus", region: "Midwest" },
-  // Codex can expand to all 50 later
+  { state: "Oklahoma", capital: "Oklahoma City", region: "South" },
+  { state: "Oregon", capital: "Salem", region: "West" },
+  { state: "Pennsylvania", capital: "Harrisburg", region: "Northeast" },
+  { state: "Rhode Island", capital: "Providence", region: "Northeast" },
+  { state: "South Carolina", capital: "Columbia", region: "South" },
+  { state: "South Dakota", capital: "Pierre", region: "Midwest" },
+  { state: "Tennessee", capital: "Nashville", region: "South" },
+  { state: "Texas", capital: "Austin", region: "South" },
+  { state: "Utah", capital: "Salt Lake City", region: "West" },
+  { state: "Vermont", capital: "Montpelier", region: "Northeast" },
+  { state: "Virginia", capital: "Richmond", region: "South" },
+  { state: "Washington", capital: "Olympia", region: "West" },
+  { state: "West Virginia", capital: "Charleston", region: "South" },
+  { state: "Wisconsin", capital: "Madison", region: "Midwest" },
+  { state: "Wyoming", capital: "Cheyenne", region: "West" }
 ];
+
+const BOSSES = {
+  West: {
+    name: "Quartz Colossus",
+    flavor: "A crystal giant rises from the mesas.",
+    attacks: ["Quartz shards rain down!", "The ground trembles!", "A blinding flash stuns you!"]
+  },
+  Midwest: {
+    name: "Iron Prairie Warden",
+    flavor: "Steel horns and prairie winds fill the arena.",
+    attacks: ["Stampede shockwave!", "Gears grind in the wind!", "A hammering stomp cracks the earth!"]
+  },
+  South: {
+    name: "Mossback Sentinel",
+    flavor: "Vines whip as the bayou guardian awakens.",
+    attacks: ["Swamp mist engulfs you!", "Roots lash out!", "A roar echoes from the wetlands!"]
+  },
+  Northeast: {
+    name: "Stormbrick Regent",
+    flavor: "Charged bricks hover with a rumbling hum.",
+    attacks: ["Thunder crash!", "Electric bricks surge!", "A gale of sparks sweeps in!"]
+  }
+};
 
 const BUILDINGS = [
-  { name: "House", icon: "H", cost: 10 },
-  { name: "School", icon: "S", cost: 20 },
-  { name: "Park", icon: "P", cost: 15 },
-  { name: "Library", icon: "L", cost: 25 },
+  { id: "house", name: "House", icon: "H", cost: 10, bonus: "Adds cozy vibes. Helps your streak feel safe." },
+  { id: "school", name: "School", icon: "S", cost: 20, bonus: "Boosts study power. Perfect for quiz focus." },
+  { id: "park", name: "Park", icon: "P", cost: 15, bonus: "Grows green blocks. Calms boss battles." },
+  { id: "library", name: "Librarium", icon: "L", cost: 25, bonus: "Stacks knowledge. Hint vibe intensifies." },
+  { id: "forge", name: "Forge", icon: "F", cost: 30, bonus: "Forges coins. Hot sparks of progress." }
 ];
 
-let coins = 0;
-let streak = 0;
-let youHp = 3;
+const els = {
+  coins: document.getElementById("coins"),
+  streak: document.getElementById("streak"),
+  hintTokens: document.getElementById("hintTokens"),
+  bossName: document.getElementById("bossName"),
+  youHearts: document.getElementById("youHearts"),
+  bossHearts: document.getElementById("bossHearts"),
+  question: document.getElementById("question"),
+  choices: document.getElementById("choices"),
+  result: document.getElementById("result"),
+  quizCard: document.getElementById("quizCard"),
+  hintMessage: document.getElementById("hintMessage"),
+  city: document.getElementById("city"),
+  shop: document.getElementById("shop"),
+  selectedBuilding: document.getElementById("selectedBuilding"),
+  bossTitle: document.getElementById("bossTitle"),
+  bossFlavor: document.getElementById("bossFlavor"),
+  bossAttack: document.getElementById("bossAttack"),
+  floatLayer: document.getElementById("floatLayer"),
+  hintBtn: document.getElementById("hintBtn"),
+  difficultySelect: document.getElementById("difficultySelect"),
+  answerInput: document.getElementById("answerInput"),
+  submitAnswer: document.getElementById("submitAnswer"),
+  typeAnswer: document.getElementById("typeAnswer"),
+  soundToggle: document.getElementById("soundToggle"),
+  resetGame: document.getElementById("resetGame")
+};
 
-let bossRegion = null;
-let bossHp = 0;
+let currentQuestion = null;
+let audioContext = null;
 
-const gridSize = 6;
-const city = Array(gridSize * gridSize).fill(null);
+function defaultState() {
+  return {
+    coins: 0,
+    streak: 0,
+    youHp: 5,
+    maxHp: 5,
+    boss: { active: false, region: null, name: null, hp: 0, maxHp: 0, attackIndex: 0 },
+    difficulty: "easy",
+    hintTokens: 0,
+    totalCorrect: 0,
+    selectedBuilding: null,
+    soundOn: true,
+    city: Array(gridSize * gridSize).fill(null)
+  };
+}
 
-const elCoins = document.getElementById("coins");
-const elStreak = document.getElementById("streak");
-const elBoss = document.getElementById("boss");
-const elBossHp = document.getElementById("bossHp");
-const elYouHp = document.getElementById("youHp");
-const elQuestion = document.getElementById("question");
-const elChoices = document.getElementById("choices");
-const elResult = document.getElementById("result");
-const elCity = document.getElementById("city");
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return defaultState();
+  try {
+    const parsed = JSON.parse(raw);
+    return { ...defaultState(), ...parsed };
+  } catch (error) {
+    console.warn("Save data reset:", error);
+    return defaultState();
+  }
+}
 
-function randInt(n) { return Math.floor(Math.random() * n); }
+let state = loadState();
+if (!Array.isArray(state.city) || state.city.length !== gridSize * gridSize) {
+  state.city = Array(gridSize * gridSize).fill(null);
+}
+if (state.selectedBuilding && !BUILDINGS.some(item => item.id === state.selectedBuilding)) {
+  state.selectedBuilding = null;
+}
 
-function pickQuestion() {
-  const pool = bossRegion ? STATES.filter(x => x.region === bossRegion) : STATES;
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function randInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+function shuffle(list) {
+  return list.sort(() => Math.random() - 0.5);
+}
+
+function playTone(freq, duration = 0.15) {
+  if (!state.soundOn) return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  if (!audioContext) audioContext = new AudioContextClass();
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = "square";
+  oscillator.frequency.value = freq;
+  gain.gain.value = 0.08;
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + duration);
+}
+
+function renderHearts(container, current, max) {
+  container.innerHTML = "";
+  for (let i = 0; i < max; i += 1) {
+    const heart = document.createElement("span");
+    heart.className = "heart" + (i < current ? "" : " empty");
+    container.appendChild(heart);
+  }
+}
+
+function updateHud() {
+  els.coins.textContent = state.coins;
+  els.streak.textContent = state.streak;
+  els.hintTokens.textContent = state.hintTokens;
+  els.bossName.textContent = state.boss.active ? state.boss.name : "None";
+  renderHearts(els.youHearts, state.youHp, state.maxHp);
+  renderHearts(els.bossHearts, state.boss.hp, state.boss.maxHp || 5);
+  els.soundToggle.textContent = `Sound: ${state.soundOn ? "On" : "Off"}`;
+  els.difficultySelect.value = state.difficulty;
+  els.hintBtn.disabled = state.hintTokens === 0 || (currentQuestion && currentQuestion.hintUsed);
+}
+
+function updateBossPanel(message = null) {
+  if (!state.boss.active) {
+    els.bossTitle.textContent = "No boss yet.";
+    els.bossFlavor.textContent = "Keep your streak to summon a regional boss!";
+    els.bossAttack.textContent = "Boss attacks will show here.";
+    return;
+  }
+  const bossData = BOSSES[state.boss.region];
+  els.bossTitle.textContent = `${state.boss.name} (${state.boss.region})`;
+  els.bossFlavor.textContent = bossData.flavor;
+  if (message) {
+    els.bossAttack.textContent = message;
+  }
+}
+
+function renderCity() {
+  els.city.innerHTML = "";
+  state.city.forEach((buildingId, index) => {
+    const tile = document.createElement("div");
+    tile.className = "tile " + (buildingId ? "" : "empty");
+    const building = BUILDINGS.find(item => item.id === buildingId);
+    tile.textContent = building ? building.icon : "·";
+    tile.title = building ? `${building.name} (${building.cost} coins)` : "Empty";
+    if (!buildingId && state.selectedBuilding) {
+      tile.classList.add("selected");
+    }
+    tile.addEventListener("click", () => tryPlaceBuilding(index));
+    els.city.appendChild(tile);
+  });
+}
+
+function renderShop() {
+  els.shop.innerHTML = "";
+  BUILDINGS.forEach(building => {
+    const card = document.createElement("div");
+    card.className = "shop-card tooltip";
+    card.dataset.tooltip = building.bonus;
+
+    const title = document.createElement("div");
+    title.textContent = `${building.icon} ${building.name}`;
+    title.className = "value";
+
+    const cost = document.createElement("div");
+    cost.textContent = `${building.cost} coins`;
+    cost.className = "panel-description";
+
+    const button = document.createElement("button");
+    button.textContent = state.selectedBuilding === building.id ? "Selected" : "Select";
+    button.disabled = state.selectedBuilding === building.id;
+    button.addEventListener("click", () => selectBuilding(building.id));
+
+    card.appendChild(title);
+    card.appendChild(cost);
+    card.appendChild(button);
+    els.shop.appendChild(card);
+  });
+}
+
+function selectBuilding(buildingId) {
+  state.selectedBuilding = buildingId;
+  const building = BUILDINGS.find(item => item.id === buildingId);
+  els.selectedBuilding.textContent = building
+    ? `Selected: ${building.name} (${building.cost} coins)`
+    : "Select a building in the Shop.";
+  renderShop();
+  renderCity();
+  saveState();
+}
+
+function tryPlaceBuilding(index) {
+  if (state.city[index]) return;
+  if (!state.selectedBuilding) {
+    els.result.textContent = "Pick a building in the Shop before placing blocks.";
+    return;
+  }
+  const building = BUILDINGS.find(item => item.id === state.selectedBuilding);
+  if (!building) return;
+  if (state.coins < building.cost) {
+    els.result.textContent = "Not enough coins. Answer questions to earn more.";
+    return;
+  }
+  state.coins -= building.cost;
+  state.city[index] = building.id;
+  els.result.textContent = `Built ${building.name}! (-${building.cost} coins)`;
+  updateHud();
+  renderCity();
+  saveState();
+}
+
+function makeQuestion() {
+  const pool = state.boss.active
+    ? STATES.filter(item => item.region === state.boss.region)
+    : STATES;
   const answer = pool[randInt(pool.length)];
   const askStateToCapital = Math.random() < 0.5;
 
-  let question, correct;
+  let question;
+  let correct;
   if (askStateToCapital) {
     question = `What is the capital of ${answer.state}?`;
     correct = answer.capital;
@@ -54,118 +307,238 @@ function pickQuestion() {
     correct = answer.state;
   }
 
-  const choicePool = askStateToCapital ? STATES.map(x => x.capital) : STATES.map(x => x.state);
+  const choicePool = askStateToCapital ? STATES.map(item => item.capital) : STATES.map(item => item.state);
   const choices = new Set([correct]);
   while (choices.size < 4) choices.add(choicePool[randInt(choicePool.length)]);
-  const choiceList = Array.from(choices).sort(() => Math.random() - 0.5);
-
-  return { question, correct, choices: choiceList };
+  return {
+    question,
+    correct,
+    choices: shuffle(Array.from(choices)),
+    hintUsed: false
+  };
 }
 
-function updateHud() {
-  elCoins.textContent = coins;
-  elStreak.textContent = streak;
-  elBoss.textContent = bossRegion ? bossRegion : "None";
-  elBossHp.textContent = bossHp;
-  elYouHp.textContent = youHp;
-}
+function renderQuestion() {
+  currentQuestion = makeQuestion();
+  els.question.textContent = currentQuestion.question;
+  els.result.textContent = "";
+  els.hintMessage.textContent = "";
+  els.choices.innerHTML = "";
+  els.answerInput.value = "";
+  els.hintBtn.disabled = state.hintTokens === 0;
 
-function renderCity() {
-  elCity.innerHTML = "";
-  city.forEach((b, i) => {
-    const tile = document.createElement("div");
-    tile.className = "tile " + (b ? "" : "empty");
-    tile.textContent = b ? b.icon : "·";
-    tile.title = b ? b.name : "Empty";
-    tile.onclick = () => tryPlaceBuilding(i);
-    elCity.appendChild(tile);
-  });
-}
-
-function tryPlaceBuilding(index) {
-  if (city[index]) return;
-
-  const affordable = BUILDINGS.filter(b => b.cost <= coins).sort((a,b)=>a.cost-b.cost);
-  if (affordable.length === 0) {
-    elResult.textContent = "Not enough coins to build. Answer questions to earn coins.";
-    return;
+  if (state.difficulty === "hard") {
+    els.typeAnswer.classList.remove("hidden");
+    els.choices.classList.add("hidden");
+  } else {
+    els.typeAnswer.classList.add("hidden");
+    els.choices.classList.remove("hidden");
+    currentQuestion.choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.textContent = choice;
+      btn.addEventListener("click", () => handleAnswer(choice));
+      els.choices.appendChild(btn);
+    });
   }
-  const b = affordable[0];
-  coins -= b.cost;
-  city[index] = b;
-  elResult.textContent = `Built a ${b.name}! (-${b.cost} coins)`;
-  updateHud();
-  renderCity();
-}
-
-function startBossIfReady() {
-  if (bossRegion) return;
-  if (streak > 0 && streak % 10 === 0) {
-    const regions = ["West", "Midwest", "South", "Northeast"];
-    bossRegion = regions[randInt(regions.length)];
-    bossHp = 3;
-    youHp = 3;
-    elResult.textContent = `BOSS BATTLE! Region: ${bossRegion}`;
-  }
-}
-
-let current = null;
-
-function askNext() {
-  current = pickQuestion();
-  elQuestion.textContent = current.question;
-  elChoices.innerHTML = "";
-  elResult.textContent = "";
-
-  current.choices.forEach(choice => {
-    const btn = document.createElement("button");
-    btn.textContent = choice;
-    btn.onclick = () => answer(choice);
-    elChoices.appendChild(btn);
-  });
 
   updateHud();
   renderCity();
+  updateBossPanel();
 }
 
-function answer(choice) {
-  const correct = choice === current.correct;
+function applyQuestionFeedback(correct) {
+  els.quizCard.classList.remove("pop", "shake");
+  void els.quizCard.offsetWidth;
+  els.quizCard.classList.add(correct ? "pop" : "shake");
+}
 
-  if (correct) {
-    coins += 10;
-    streak += 1;
+function showFloatingText(text, anchorEl) {
+  const rect = anchorEl.getBoundingClientRect();
+  const float = document.createElement("div");
+  float.className = "float-text";
+  float.textContent = text;
+  float.style.left = `${rect.left + rect.width / 2}px`;
+  float.style.top = `${rect.top}px`;
+  els.floatLayer.appendChild(float);
+  setTimeout(() => float.remove(), 1100);
+}
 
-    if (bossRegion) {
-      bossHp -= 1;
-      elResult.textContent = `Correct! You hit the boss. (+10 coins)`;
-      if (bossHp <= 0) {
-        elResult.textContent = `Boss defeated!`;
-        bossRegion = null;
-        bossHp = 0;
-      }
-    } else {
-      elResult.textContent = `Correct! (+10 coins) Click a city tile to build.`;
-      startBossIfReady();
+function startBossBattle() {
+  if (state.boss.active) return;
+  if (state.streak > 0 && state.streak % 10 === 0) {
+    const regions = Object.keys(BOSSES);
+    const region = regions[randInt(regions.length)];
+    const bossData = BOSSES[region];
+    state.boss = {
+      active: true,
+      region,
+      name: bossData.name,
+      hp: 5,
+      maxHp: 5,
+      attackIndex: 0
+    };
+    state.youHp = state.maxHp;
+    els.result.textContent = `Boss battle begins! ${bossData.name} approaches.`;
+    updateBossPanel("The boss roars as the battle begins!");
+  }
+}
+
+function handleCorrectAnswer() {
+  state.coins += 10;
+  state.streak += 1;
+  state.totalCorrect += 1;
+  applyQuestionFeedback(true);
+  showFloatingText("+10", els.coins);
+  playTone(660);
+
+  if (state.totalCorrect % 5 === 0) {
+    state.hintTokens += 1;
+    els.hintMessage.textContent = "Hint token earned!";
+  }
+
+  if (state.boss.active) {
+    state.boss.hp -= 1;
+    els.result.textContent = `Direct hit! ${state.boss.name} loses 1 HP.`;
+    if (state.boss.hp <= 0) {
+      els.result.textContent = `${state.boss.name} crumbles into blocks. Victory!`;
+      state.boss = { active: false, region: null, name: null, hp: 0, maxHp: 0, attackIndex: 0 };
+      updateBossPanel();
+      return;
+    }
+    updateBossPanel("The boss staggers from your strike!");
+  } else {
+    els.result.textContent = "Correct! Build in your city to celebrate.";
+    startBossBattle();
+  }
+}
+
+function handleWrongAnswer() {
+  applyQuestionFeedback(false);
+  playTone(220);
+  if (state.boss.active) {
+    state.youHp -= 1;
+    const bossData = BOSSES[state.boss.region];
+    const attackText = bossData.attacks[state.boss.attackIndex % bossData.attacks.length];
+    state.boss.attackIndex += 1;
+    els.result.textContent = `Ouch! ${state.boss.name} strikes back.`;
+    updateBossPanel(attackText);
+    if (state.youHp <= 0) {
+      els.result.textContent = `${state.boss.name} wins this round. Regroup and try again!`;
+      state.boss = { active: false, region: null, name: null, hp: 0, maxHp: 0, attackIndex: 0 };
+      state.youHp = state.maxHp;
+      state.streak = 0;
+      updateBossPanel();
     }
   } else {
-    elResult.textContent = `Nope. Correct answer was: ${current.correct}`;
-    if (bossRegion) {
-      youHp -= 1;
-      if (youHp <= 0) {
-        elResult.textContent = `You lost the boss battle. Try again.`;
-        bossRegion = null;
-        bossHp = 0;
-        youHp = 3;
-      }
-    } else {
-      streak = 0;
-    }
+    els.result.textContent = `Not quite. The correct answer was ${currentQuestion.correct}.`;
+    state.streak = 0;
   }
-
-  updateHud();
-  setTimeout(askNext, 700);
 }
 
-updateHud();
-renderCity();
-askNext();
+function handleAnswer(choice) {
+  const correct = choice === currentQuestion.correct;
+  if (state.difficulty !== "hard") {
+    [...els.choices.children].forEach(button => {
+      const isCorrect = button.textContent === currentQuestion.correct;
+      button.classList.add(isCorrect ? "correct" : "wrong");
+      button.disabled = true;
+    });
+  }
+
+  if (correct) {
+    handleCorrectAnswer();
+  } else {
+    handleWrongAnswer();
+  }
+  updateHud();
+  saveState();
+  setTimeout(renderQuestion, 900);
+}
+
+function handleTypedAnswer() {
+  const value = els.answerInput.value.trim();
+  if (!value) return;
+  const correctNormalized = currentQuestion.correct.toLowerCase();
+  const userNormalized = value.toLowerCase();
+  const correct = userNormalized === correctNormalized;
+  if (correct) {
+    handleCorrectAnswer();
+  } else {
+    handleWrongAnswer();
+  }
+  updateHud();
+  saveState();
+  setTimeout(renderQuestion, 900);
+}
+
+function useHint() {
+  if (state.hintTokens <= 0 || currentQuestion.hintUsed) return;
+  currentQuestion.hintUsed = true;
+  state.hintTokens -= 1;
+  els.hintBtn.disabled = true;
+
+  if (state.difficulty === "hard") {
+    els.hintMessage.textContent = `Hint: starts with "${currentQuestion.correct.charAt(0)}".`;
+  } else {
+    const buttons = [...els.choices.querySelectorAll("button")];
+    const wrongButtons = buttons.filter(btn => btn.textContent !== currentQuestion.correct);
+    const removeCount = state.difficulty === "easy" ? 2 : 1;
+    shuffle(wrongButtons).slice(0, removeCount).forEach(btn => {
+      btn.classList.add("disabled");
+      btn.disabled = true;
+    });
+    els.hintMessage.textContent = "Hint used!";
+  }
+  updateHud();
+  saveState();
+}
+
+function initNav() {
+  const navButtons = document.querySelectorAll(".nav-btn");
+  navButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      navButtons.forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+      const target = button.dataset.panel;
+      document.querySelectorAll(".panel").forEach(panel => {
+        panel.classList.toggle("active", panel.id === `panel-${target}`);
+      });
+    });
+  });
+}
+
+function resetGame() {
+  if (!confirm("Reset everything? Your city and coins will be wiped.")) return;
+  state = defaultState();
+  saveState();
+  location.reload();
+}
+
+function init() {
+  initNav();
+  updateHud();
+  renderShop();
+  renderCity();
+  selectBuilding(state.selectedBuilding);
+  renderQuestion();
+
+  els.hintBtn.addEventListener("click", useHint);
+  els.submitAnswer.addEventListener("click", handleTypedAnswer);
+  els.answerInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") handleTypedAnswer();
+  });
+  els.soundToggle.addEventListener("click", () => {
+    state.soundOn = !state.soundOn;
+    updateHud();
+    saveState();
+  });
+  els.difficultySelect.addEventListener("change", event => {
+    state.difficulty = event.target.value;
+    saveState();
+    renderQuestion();
+  });
+  els.resetGame.addEventListener("click", resetGame);
+}
+
+init();
