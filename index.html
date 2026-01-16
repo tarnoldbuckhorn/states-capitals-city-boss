@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>City Builder + Boss Battle (States & Capitals)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>City Builder + Boss Battle</h1>
+
+  <div id="hud">
+    <div>Coins: <span id="coins">0</span></div>
+    <div>Correct Streak: <span id="streak">0</span></div>
+    <div>Boss: <span id="boss">None</span> | Boss HP: <span id="bossHp">0</span></div>
+    <div>You HP: <span id="youHp">3</span></div>
+  </div>
+
+  <div id="quiz">
+    <h2 id="question">Loading…</h2>
+    <div id="choices"></div>
+    <p id="result"></p>
+  </div>
+
+  <h2>Your City (click tiles to build)</h2>
+  <div id="city"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

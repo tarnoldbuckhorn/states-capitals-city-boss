@@ -1,0 +1,19 @@
+body { font-family: system-ui, Arial, sans-serif; padding: 16px; }
+#hud { display: flex; gap: 16px; flex-wrap: wrap; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+#choices { display: grid; gap: 8px; max-width: 420px; }
+button { padding: 10px; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+button:hover { background: #f3f3f3; }
+
+#city {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(6, 54px);
+  gap: 6px;
+}
+.tile {
+  width: 54px; height: 54px;
+  display: grid; place-items: center;
+  border: 1px solid #ccc; border-radius: 10px;
+  font-weight: 700;
+}
+.empty { opacity: 0.25; }
