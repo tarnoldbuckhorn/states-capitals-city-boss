@@ -109,6 +109,7 @@ const els = {
   miniTarget: document.getElementById("miniTarget"),
   miniStatus: document.getElementById("miniStatus"),
   miniStrikeBtn: document.getElementById("miniStrikeBtn"),
+  bossActionBtn: document.getElementById("bossActionBtn"),
   floatLayer: document.getElementById("floatLayer"),
   hintBtn: document.getElementById("hintBtn"),
   difficultySelect: document.getElementById("difficultySelect"),
@@ -223,6 +224,7 @@ function updateBossPanel(message = null) {
     els.bossFlavor.textContent = "Keep your streak to summon a regional boss!";
     els.bossAttack.textContent = "Boss attacks will show here.";
     els.bossPrompt.textContent = "Boss quiz prompts will appear when a boss arrives.";
+    els.bossActionBtn.textContent = "Call Boss";
     els.bossMiniGame.classList.add("hidden");
     setMiniGameStatus("Wait for a boss to appear!");
     stopMiniGame();
@@ -231,6 +233,7 @@ function updateBossPanel(message = null) {
   const bossData = BOSSES[state.boss.region];
   els.bossTitle.textContent = `${state.boss.name} (${state.boss.region})`;
   els.bossFlavor.textContent = bossData.flavor;
+  els.bossActionBtn.textContent = "Boss Strike";
   if (message) {
     els.bossAttack.textContent = message;
   }
@@ -521,6 +524,48 @@ function startBossBattle() {
   }
 }
 
+function summonBossNow() {
+  if (state.boss.active) return;
+  const regions = Object.keys(BOSSES);
+  const region = regions[randInt(regions.length)];
+  const bossData = BOSSES[region];
+  state.boss = {
+    active: true,
+    region,
+    name: bossData.name,
+    hp: 5,
+    maxHp: 5,
+    attackIndex: 0
+  };
+  state.youHp = state.maxHp;
+  els.result.textContent = `You called ${bossData.name} into the arena!`;
+  updateBossPanel("The boss emerges and sizes you up.");
+  updateBossPrompt();
+  updateHud();
+  saveState();
+}
+
+function triggerBossStrike() {
+  if (!state.boss.active) {
+    summonBossNow();
+    return;
+  }
+  const bossData = BOSSES[state.boss.region];
+  const attackText = bossData.attacks[state.boss.attackIndex % bossData.attacks.length];
+  state.boss.attackIndex += 1;
+  state.youHp -= 1;
+  els.result.textContent = `${state.boss.name} lashes out at you!`;
+  updateBossPanel(attackText);
+  if (state.youHp <= 0) {
+    els.result.textContent = `${state.boss.name} wins this round. Regroup and try again!`;
+    state.youHp = state.maxHp;
+    state.streak = 0;
+    clearBossBattle();
+  }
+  updateHud();
+  saveState();
+}
+
 function handleCorrectAnswer() {
   state.coins += 10;
   state.streak += 1;
@@ -675,6 +720,7 @@ function init() {
   });
   els.resetGame.addEventListener("click", resetGame);
   els.miniStrikeBtn.addEventListener("click", handleMiniStrike);
+  els.bossActionBtn.addEventListener("click", triggerBossStrike);
 }
 
 init();
