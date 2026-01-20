@@ -399,6 +399,62 @@ button.choice.wrong {
   color: var(--muted);
 }
 
+.boss-mini-game {
+  margin-top: 6px;
+  padding: 12px;
+  border: 3px dashed var(--border);
+  background: #1a2029;
+  display: grid;
+  gap: 10px;
+}
+
+.mini-title {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 13px;
+}
+
+.mini-meter {
+  position: relative;
+  height: 18px;
+  border: 3px solid var(--border);
+  background: #0f141b;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.mini-target {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(100, 211, 104, 0.4);
+  border-right: 2px solid rgba(100, 211, 104, 0.9);
+  border-left: 2px solid rgba(100, 211, 104, 0.9);
+}
+
+.mini-indicator {
+  position: absolute;
+  top: -4px;
+  width: 10px;
+  height: 26px;
+  background: #f1d87a;
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+
+.mini-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.mini-status {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .float-layer {
   position: fixed;
   inset: 0;
