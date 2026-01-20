@@ -103,6 +103,7 @@ const els = {
   bossTitle: document.getElementById("bossTitle"),
   bossFlavor: document.getElementById("bossFlavor"),
   bossAttack: document.getElementById("bossAttack"),
+  bossPrompt: document.getElementById("bossPrompt"),
   bossMiniGame: document.getElementById("bossMiniGame"),
   miniIndicator: document.getElementById("miniIndicator"),
   miniTarget: document.getElementById("miniTarget"),
@@ -221,6 +222,7 @@ function updateBossPanel(message = null) {
     els.bossTitle.textContent = "No boss yet.";
     els.bossFlavor.textContent = "Keep your streak to summon a regional boss!";
     els.bossAttack.textContent = "Boss attacks will show here.";
+    els.bossPrompt.textContent = "Boss quiz prompts will appear when a boss arrives.";
     els.bossMiniGame.classList.add("hidden");
     setMiniGameStatus("Wait for a boss to appear!");
     stopMiniGame();
@@ -234,6 +236,19 @@ function updateBossPanel(message = null) {
   }
   els.bossMiniGame.classList.remove("hidden");
   startMiniGame();
+}
+
+function updateBossPrompt() {
+  if (!currentQuestion) return;
+  if (!state.boss.active) {
+    els.bossPrompt.textContent = "Boss quiz prompts will appear when a boss arrives.";
+    return;
+  }
+  if (currentQuestion.mode === "state-to-capital") {
+    els.bossPrompt.textContent = `Boss Challenge: State: ${currentQuestion.state} — What's the capital?`;
+  } else {
+    els.bossPrompt.textContent = `Boss Challenge: Capital: ${currentQuestion.capital} — Which state is it?`;
+  }
 }
 
 function renderCity() {
@@ -334,7 +349,10 @@ function makeQuestion() {
     question,
     correct,
     choices: shuffle(Array.from(choices)),
-    hintUsed: false
+    hintUsed: false,
+    mode: askStateToCapital ? "state-to-capital" : "capital-to-state",
+    state: answer.state,
+    capital: answer.capital
   };
 }
 
@@ -365,6 +383,7 @@ function renderQuestion() {
   updateHud();
   renderCity();
   updateBossPanel();
+  updateBossPrompt();
 }
 
 function applyQuestionFeedback(correct) {
