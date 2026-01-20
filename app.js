@@ -54,6 +54,39 @@ const STATES = [
   { state: "Wyoming", capital: "Cheyenne", region: "West" }
 ];
 
+const STATE_SHAPES = [
+  {
+    state: "California",
+    viewBox: "0 0 100 120",
+    path: "M28 8 L52 10 L60 28 L52 52 L72 108 L46 112 L30 86 L20 56 L14 30 Z"
+  },
+  {
+    state: "Texas",
+    viewBox: "0 0 120 100",
+    path: "M12 20 L48 12 L82 26 L96 46 L86 70 L100 86 L74 92 L50 78 L34 90 L18 68 L24 44 Z"
+  },
+  {
+    state: "Florida",
+    viewBox: "0 0 120 100",
+    path: "M18 28 L54 24 L88 34 L96 50 L84 56 L104 68 L96 86 L72 74 L54 64 L34 52 L18 44 Z"
+  },
+  {
+    state: "Colorado",
+    viewBox: "0 0 120 80",
+    path: "M12 16 L108 16 L108 64 L12 64 Z"
+  },
+  {
+    state: "Michigan",
+    viewBox: "0 0 120 110",
+    path: "M18 24 L44 16 L62 28 L58 52 L40 64 L22 52 Z M70 38 L98 36 L108 54 L96 74 L74 76 L66 56 Z"
+  },
+  {
+    state: "Alaska",
+    viewBox: "0 0 120 90",
+    path: "M10 40 L30 18 L68 12 L102 30 L110 56 L86 78 L44 72 L18 56 Z"
+  }
+];
+
 const BOSSES = {
   West: {
     name: "Quartz Colossus",
@@ -119,6 +152,7 @@ const els = {
   typeAnswer: document.getElementById("typeAnswer"),
   soundToggle: document.getElementById("soundToggle"),
   resetGame: document.getElementById("resetGame"),
+  stateShape: document.getElementById("stateShape"),
   removeModeBtn: document.getElementById("removeModeBtn")
 };
 
@@ -255,6 +289,8 @@ function updateBossPrompt() {
   }
   if (currentQuestion.mode === "state-to-capital") {
     els.bossPrompt.textContent = `Boss Challenge: State: ${currentQuestion.state} — What's the capital?`;
+  } else if (currentQuestion.mode === "shape-to-state") {
+    els.bossPrompt.textContent = "Boss Challenge: Match the state shape to its name.";
   } else {
     els.bossPrompt.textContent = `Boss Challenge: Capital: ${currentQuestion.capital} — Which state is it?`;
   }
@@ -380,6 +416,29 @@ function makeQuestion() {
   const pool = state.boss.active
     ? STATES.filter(item => item.region === state.boss.region)
     : STATES;
+  const shapePool = STATE_SHAPES.filter(shape => {
+    if (!state.boss.active) return true;
+    const shapeState = STATES.find(item => item.state === shape.state);
+    return shapeState && shapeState.region === state.boss.region;
+  });
+  const shouldAskShape = shapePool.length > 0 && Math.random() < 0.25;
+
+  if (shouldAskShape) {
+    const answer = shapePool[randInt(shapePool.length)];
+    const choices = new Set([answer.state]);
+    while (choices.size < 4) choices.add(STATES[randInt(STATES.length)].state);
+    return {
+      question: "Which state matches this shape?",
+      correct: answer.state,
+      choices: shuffle(Array.from(choices)),
+      hintUsed: false,
+      mode: "shape-to-state",
+      state: answer.state,
+      capital: STATES.find(item => item.state === answer.state)?.capital ?? "",
+      shape: answer
+    };
+  }
+
   const answer = pool[randInt(pool.length)];
   const askStateToCapital = Math.random() < 0.5;
 
@@ -403,7 +462,8 @@ function makeQuestion() {
     hintUsed: false,
     mode: askStateToCapital ? "state-to-capital" : "capital-to-state",
     state: answer.state,
-    capital: answer.capital
+    capital: answer.capital,
+    shape: null
   };
 }
 
@@ -416,7 +476,22 @@ function renderQuestion() {
   els.answerInput.value = "";
   els.hintBtn.disabled = state.hintTokens === 0;
 
-  if (state.difficulty === "hard") {
+  const isShapeQuestion = currentQuestion.mode === "shape-to-state";
+
+  if (isShapeQuestion && currentQuestion.shape) {
+    const { viewBox, path, state: shapeState } = currentQuestion.shape;
+    els.stateShape.innerHTML = `
+      <svg viewBox="${viewBox}" role="img" aria-label="${shapeState} shape">
+        <path d="${path}"></path>
+      </svg>
+    `;
+    els.stateShape.classList.remove("hidden");
+  } else {
+    els.stateShape.innerHTML = "";
+    els.stateShape.classList.add("hidden");
+  }
+
+  if (state.difficulty === "hard" && !isShapeQuestion) {
     els.typeAnswer.classList.remove("hidden");
     els.choices.classList.add("hidden");
   } else {
@@ -706,7 +781,9 @@ function useHint() {
   state.hintTokens -= 1;
   els.hintBtn.disabled = true;
 
-  if (state.difficulty === "hard") {
+  const isShapeQuestion = currentQuestion.mode === "shape-to-state";
+
+  if (state.difficulty === "hard" && !isShapeQuestion) {
     els.hintMessage.textContent = `Hint: starts with "${currentQuestion.correct.charAt(0)}".`;
   } else {
     const buttons = [...els.choices.querySelectorAll("button")];
