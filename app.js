@@ -118,7 +118,8 @@ const els = {
   submitAnswer: document.getElementById("submitAnswer"),
   typeAnswer: document.getElementById("typeAnswer"),
   soundToggle: document.getElementById("soundToggle"),
-  resetGame: document.getElementById("resetGame")
+  resetGame: document.getElementById("resetGame"),
+  removeModeBtn: document.getElementById("removeModeBtn")
 };
 
 let currentQuestion = null;
@@ -145,6 +146,7 @@ function defaultState() {
     hintTokens: 0,
     totalCorrect: 0,
     selectedBuilding: null,
+    removeMode: false,
     soundOn: true,
     city: Array(gridSize * gridSize).fill(null)
   };
@@ -218,6 +220,8 @@ function updateHud() {
   els.difficultySelect.value = state.difficulty;
   els.hintBtn.disabled = state.hintTokens === 0 || (currentQuestion && currentQuestion.hintUsed);
   els.bossViewBtn.classList.toggle("hidden", !state.boss.active);
+  els.removeModeBtn.textContent = `Remove Mode: ${state.removeMode ? "On" : "Off"}`;
+  els.removeModeBtn.classList.toggle("active", state.removeMode);
 }
 
 function updateBossPanel(message = null) {
@@ -258,16 +262,27 @@ function updateBossPrompt() {
 
 function renderCity() {
   els.city.innerHTML = "";
+  els.city.classList.toggle("remove-mode", state.removeMode);
   state.city.forEach((buildingId, index) => {
     const tile = document.createElement("div");
     tile.className = "tile " + (buildingId ? "" : "empty");
     const building = BUILDINGS.find(item => item.id === buildingId);
     tile.textContent = building ? building.icon : "·";
     tile.title = building ? `${building.name} (${building.cost} coins)` : "Empty";
+    if (buildingId && state.removeMode) {
+      tile.classList.add("removable");
+      tile.title = `Remove ${building.name}`;
+    }
     if (!buildingId && state.selectedBuilding) {
       tile.classList.add("selected");
     }
-    tile.addEventListener("click", () => tryPlaceBuilding(index));
+    tile.addEventListener("click", () => {
+      if (state.removeMode) {
+        tryRemoveBuilding(index);
+      } else {
+        tryPlaceBuilding(index);
+      }
+    });
     els.city.appendChild(tile);
   });
 }
@@ -299,13 +314,29 @@ function renderShop() {
   });
 }
 
-function selectBuilding(buildingId) {
-  state.selectedBuilding = buildingId;
-  const building = BUILDINGS.find(item => item.id === buildingId);
+function updateSelectedBuildingStatus() {
+  if (state.removeMode) {
+    els.selectedBuilding.textContent = "Remove mode active: click a placed block to delete it.";
+    return;
+  }
+  const building = BUILDINGS.find(item => item.id === state.selectedBuilding);
   els.selectedBuilding.textContent = building
     ? `Selected: ${building.name} (${building.cost} coins)`
     : "Select a building in the Shop.";
+}
+
+function selectBuilding(buildingId) {
+  state.selectedBuilding = buildingId;
+  state.removeMode = false;
+  updateSelectedBuildingStatus();
   renderShop();
+  renderCity();
+  saveState();
+}
+
+function toggleRemoveMode() {
+  state.removeMode = !state.removeMode;
+  updateSelectedBuildingStatus();
   renderCity();
   saveState();
 }
@@ -325,6 +356,21 @@ function tryPlaceBuilding(index) {
   state.coins -= building.cost;
   state.city[index] = building.id;
   els.result.textContent = `Built ${building.name}! (-${building.cost} coins)`;
+  updateHud();
+  renderCity();
+  saveState();
+}
+
+function tryRemoveBuilding(index) {
+  if (!state.city[index]) {
+    els.result.textContent = "Nothing here yet. Click a placed block to remove it.";
+    return;
+  }
+  const building = BUILDINGS.find(item => item.id === state.city[index]);
+  state.city[index] = null;
+  els.result.textContent = building
+    ? `Removed ${building.name}.`
+    : "Removed a building.";
   updateHud();
   renderCity();
   saveState();
@@ -705,7 +751,7 @@ function init() {
   updateHud();
   renderShop();
   renderCity();
-  selectBuilding(state.selectedBuilding);
+  updateSelectedBuildingStatus();
   renderQuestion();
 
   els.hintBtn.addEventListener("click", useHint);
@@ -726,6 +772,7 @@ function init() {
   els.resetGame.addEventListener("click", resetGame);
   els.miniStrikeBtn.addEventListener("click", handleMiniStrike);
   els.bossActionBtn.addEventListener("click", triggerBossStrike);
+  els.removeModeBtn.addEventListener("click", toggleRemoveMode);
   els.bossViewBtn.addEventListener("click", () => {
     if (!state.boss.active) return;
     setActivePanel("boss");
