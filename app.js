@@ -92,6 +92,7 @@ const els = {
   bossName: document.getElementById("bossName"),
   youHearts: document.getElementById("youHearts"),
   bossHearts: document.getElementById("bossHearts"),
+  bossViewBtn: document.getElementById("bossViewBtn"),
   question: document.getElementById("question"),
   choices: document.getElementById("choices"),
   result: document.getElementById("result"),
@@ -216,6 +217,7 @@ function updateHud() {
   els.soundToggle.textContent = `Sound: ${state.soundOn ? "On" : "Off"}`;
   els.difficultySelect.value = state.difficulty;
   els.hintBtn.disabled = state.hintTokens === 0 || (currentQuestion && currentQuestion.hintUsed);
+  els.bossViewBtn.classList.toggle("hidden", !state.boss.active);
 }
 
 function updateBossPanel(message = null) {
@@ -678,13 +680,16 @@ function initNav() {
   const navButtons = document.querySelectorAll(".nav-btn");
   navButtons.forEach(button => {
     button.addEventListener("click", () => {
-      navButtons.forEach(btn => btn.classList.remove("active"));
-      button.classList.add("active");
-      const target = button.dataset.panel;
-      document.querySelectorAll(".panel").forEach(panel => {
-        panel.classList.toggle("active", panel.id === `panel-${target}`);
-      });
+      setActivePanel(button.dataset.panel);
     });
+  });
+}
+
+function setActivePanel(panelKey) {
+  const navButtons = document.querySelectorAll(".nav-btn");
+  navButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.panel === panelKey));
+  document.querySelectorAll(".panel").forEach(panel => {
+    panel.classList.toggle("active", panel.id === `panel-${panelKey}`);
   });
 }
 
@@ -721,6 +726,11 @@ function init() {
   els.resetGame.addEventListener("click", resetGame);
   els.miniStrikeBtn.addEventListener("click", handleMiniStrike);
   els.bossActionBtn.addEventListener("click", triggerBossStrike);
+  els.bossViewBtn.addEventListener("click", () => {
+    if (!state.boss.active) return;
+    setActivePanel("boss");
+    triggerBossStrike();
+  });
 }
 
 init();

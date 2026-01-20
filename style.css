@@ -128,6 +128,11 @@ body {
   gap: 6px;
 }
 
+.status-tile .btn {
+  width: 100%;
+  margin-top: 4px;
+}
+
 .label {
   font-size: 12px;
   color: var(--muted);
