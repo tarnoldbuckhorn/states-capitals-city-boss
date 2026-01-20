@@ -318,6 +318,15 @@ button.choice.wrong {
   outline-offset: -6px;
 }
 
+.tile.removable {
+  outline: 3px dashed var(--danger);
+  outline-offset: -6px;
+}
+
+.city-grid.remove-mode .tile {
+  cursor: crosshair;
+}
+
 .selected-building {
   font-weight: 700;
 }
@@ -383,6 +392,10 @@ button.choice.wrong {
 .btn.danger {
   background: var(--danger);
   color: #240a0a;
+}
+
+.btn.active.danger {
+  background: #ff8e8e;
 }
 
 .boss-card {
