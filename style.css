@@ -110,6 +110,20 @@ body {
 .top-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.update-timestamp {
+  background: var(--panel-light);
+  border: 3px solid var(--border);
+  box-shadow: 3px 3px 0 var(--shadow);
+  color: #f1d87a;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  padding: 8px 10px;
+  text-transform: uppercase;
 }
 
 .status-bar {
