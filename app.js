@@ -208,6 +208,7 @@ const els = {
   submitAnswer: document.getElementById("submitAnswer"),
   typeAnswer: document.getElementById("typeAnswer"),
   soundToggle: document.getElementById("soundToggle"),
+  updateTimestamp: document.getElementById("updateTimestamp"),
   resetGame: document.getElementById("resetGame"),
   stateShape: document.getElementById("stateShape"),
   removeModeBtn: document.getElementById("removeModeBtn")
@@ -225,6 +226,17 @@ const miniGame = {
   targetEnd: 65,
   locked: false
 };
+
+
+function renderUpdateTimestamp() {
+  const buildVersion = new URLSearchParams(window.location.search).get("build");
+  const viewedAt = new Date();
+  const viewedAtText = viewedAt.toLocaleString([], { dateStyle: "medium", timeStyle: "medium" });
+
+  els.updateTimestamp.textContent = buildVersion
+    ? `Updated: ${viewedAtText} (build ${buildVersion})`
+    : `Updated: ${viewedAtText}`;
+}
 
 function defaultState() {
   return {
@@ -882,6 +894,7 @@ function resetGame() {
 
 async function init() {
   initNav();
+  renderUpdateTimestamp();
   updateHud();
   renderShop();
   renderCity();
