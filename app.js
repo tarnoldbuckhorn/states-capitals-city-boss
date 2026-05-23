@@ -357,8 +357,6 @@ function updateBossPanel(message = null) {
   if (message) {
     els.bossAttack.textContent = message;
   }
-  els.bossMiniGame.classList.add("hidden");
-  stopMiniGame();
 }
 
 function updateBossPrompt() {
@@ -370,7 +368,7 @@ function updateBossPrompt() {
   if (currentQuestion.mode === "state-to-capital") {
     els.bossPrompt.textContent = `Boss Challenge: State: ${currentQuestion.state} — What's the capital?`;
   } else if (currentQuestion.mode === "shape-to-state") {
-    els.bossPrompt.textContent = "Boss Challenge: Match the state shape to its name.";
+    els.bossPrompt.textContent = "Boss Challenge: Match the state shape to its name (shown in the Quiz panel).";
   } else {
     els.bossPrompt.textContent = `Boss Challenge: Capital: ${currentQuestion.capital} — Which state is it?`;
   }
@@ -752,19 +750,16 @@ function triggerBossStrike() {
     summonBossNow();
     return;
   }
-  const bossData = BOSSES[state.boss.region];
-  const attackText = bossData.attacks[state.boss.attackIndex % bossData.attacks.length];
-  state.boss.attackIndex += 1;
-  state.youHp -= 1;
-  els.result.textContent = `${state.boss.name} lashes out at you!`;
-  updateBossPanel(attackText);
-  if (state.youHp <= 0) {
-    els.result.textContent = `${state.boss.name} wins this round. Regroup and try again!`;
-    state.youHp = state.maxHp;
-    state.streak = 0;
-    clearBossBattle();
+
+  if (miniGame.active) {
+    setMiniGameStatus("Mini-game already running. Lock in your strike!");
+    return;
   }
-  updateHud();
+
+  els.bossMiniGame.classList.remove("hidden");
+  startMiniGame();
+  updateBossPanel("Find the target zone and lock in your strike!");
+  els.result.textContent = `You step in to strike ${state.boss.name}.`;
   saveState();
 }
 
