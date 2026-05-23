@@ -357,8 +357,8 @@ function updateBossPanel(message = null) {
   if (message) {
     els.bossAttack.textContent = message;
   }
-  els.bossMiniGame.classList.remove("hidden");
-  startMiniGame();
+  els.bossMiniGame.classList.add("hidden");
+  stopMiniGame();
 }
 
 function updateBossPrompt() {
@@ -723,7 +723,6 @@ function startBossBattle() {
     state.youHp = state.maxHp;
     els.result.textContent = `Boss battle begins! ${bossData.name} approaches.`;
     updateBossPanel("The boss roars as the battle begins!");
-    startMiniGame();
   }
 }
 
