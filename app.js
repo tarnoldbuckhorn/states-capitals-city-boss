@@ -319,6 +319,7 @@ function renderHearts(container, current, max) {
   for (let i = 0; i < max; i += 1) {
     const heart = document.createElement("span");
     heart.className = "heart" + (i < current ? "" : " empty");
+    heart.textContent = "♥";
     container.appendChild(heart);
   }
 }
