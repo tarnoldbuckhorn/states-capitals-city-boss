@@ -54,53 +54,62 @@ const STATES = [
   { state: "Wyoming", capital: "Cheyenne", region: "West" }
 ];
 
-const STATE_SHAPES = [
-  {
-    state: "California",
-    viewBox: "0 0 100 120",
-    path: "M22 8 L50 10 L60 22 L54 44 L58 68 L72 104 L52 114 L38 90 L28 70 L20 44 L12 30 Z"
-  },
-  {
-    state: "Texas",
-    viewBox: "0 0 120 100",
-    path: "M12 24 L44 16 L68 16 L84 26 L100 26 L104 48 L88 52 L94 70 L78 86 L62 76 L52 90 L36 82 L28 66 L14 56 Z"
-  },
-  {
-    state: "Florida",
-    viewBox: "0 0 120 100",
-    path: "M12 30 L40 24 L66 28 L82 36 L86 46 L76 50 L88 60 L102 74 L94 86 L80 78 L70 66 L58 58 L46 46 L24 42 Z"
-  },
-  {
-    state: "Colorado",
-    viewBox: "0 0 120 80",
-    path: "M12 16 L108 16 L108 64 L12 64 Z"
-  },
-  {
-    state: "Michigan",
-    viewBox: "0 0 120 110",
-    path: "M22 20 L40 12 L54 22 L52 38 L60 52 L46 66 L32 56 L26 40 Z M68 42 L90 38 L104 50 L98 72 L76 76 L66 60 Z"
-  },
-  {
-    state: "Alaska",
-    viewBox: "0 0 120 90",
-    path: "M8 44 L24 30 L46 28 L66 18 L88 20 L106 34 L112 50 L94 58 L82 72 L56 74 L40 66 L24 70 L14 58 Z"
-  },
-  {
-    state: "Arizona",
-    viewBox: "0 0 120 90",
-    path: "M16 20 L88 16 L102 26 L96 72 L28 78 L12 64 Z"
-  },
-  {
-    state: "Indiana",
-    viewBox: "0 0 90 120",
-    path: "M24 12 L66 12 L64 24 L68 44 L64 66 L68 90 L62 108 L24 106 L20 84 L24 60 L20 38 Z"
-  },
-  {
-    state: "New Jersey",
-    viewBox: "0 0 90 120",
-    path: "M44 10 L58 20 L52 32 L62 44 L54 58 L60 72 L52 84 L56 98 L42 110 L30 100 L34 82 L24 66 L30 48 L24 30 L34 18 Z"
+let STATE_SHAPES = [];
+const STATE_SHAPES_GEOJSON_URL =
+  "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
+
+function polygonToPath(rings, bounds, width, height, padding) {
+  const [minLon, minLat, maxLon, maxLat] = bounds;
+  const lonSpan = Math.max(maxLon - minLon, 0.0001);
+  const latSpan = Math.max(maxLat - minLat, 0.0001);
+  const scaleX = (width - padding * 2) / lonSpan;
+  const scaleY = (height - padding * 2) / latSpan;
+  const scale = Math.min(scaleX, scaleY);
+  const drawWidth = lonSpan * scale;
+  const drawHeight = latSpan * scale;
+  const offsetX = (width - drawWidth) / 2;
+  const offsetY = (height - drawHeight) / 2;
+  const paths = rings.map(ring => {
+    return ring
+      .map(([lon, lat], index) => {
+        const x = ((lon - minLon) * scale + offsetX).toFixed(2);
+        const y = ((maxLat - lat) * scale + offsetY).toFixed(2);
+        return `${index === 0 ? "M" : "L"}${x} ${y}`;
+      })
+      .join(" ");
+  });
+  return `${paths.map(part => `${part} Z`).join(" ")} `;
+}
+
+function geometryToShapePath(geometry) {
+  const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+  const points = polygons.flat(2);
+  const lons = points.map(point => point[0]);
+  const lats = points.map(point => point[1]);
+  const bounds = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];
+  const segments = polygons.map(polygon => polygonToPath(polygon, bounds, 120, 120, 8));
+  return { viewBox: "0 0 120 120", path: segments.join(" ") };
+}
+
+async function loadStateShapes() {
+  try {
+    const response = await fetch(STATE_SHAPES_GEOJSON_URL);
+    if (!response.ok) throw new Error(`Shape source unavailable (${response.status}).`);
+    const data = await response.json();
+    STATE_SHAPES = data.features
+      .map(feature => {
+        const state = feature.properties?.name;
+        const geometry = feature.geometry;
+        if (!state || !geometry) return null;
+        const shape = geometryToShapePath(geometry);
+        return { state, ...shape };
+      })
+      .filter(Boolean);
+  } catch (error) {
+    console.warn("State shapes unavailable:", error);
+    STATE_SHAPES = [];
   }
-];
+}
 
 const BOSSES = {
   West: {
@@ -838,12 +847,13 @@ function resetGame() {
   location.reload();
 }
 
-function init() {
+async function init() {
   initNav();
   updateHud();
   renderShop();
   renderCity();
   updateSelectedBuildingStatus();
+  await loadStateShapes();
   renderQuestion();
 
   els.hintBtn.addEventListener("click", useHint);
