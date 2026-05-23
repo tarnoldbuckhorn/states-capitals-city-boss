@@ -228,10 +228,21 @@ const miniGame = {
 };
 
 
+function formatViewedAt(date) {
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "medium"
+    }).format(date);
+  } catch (error) {
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+  }
+}
+
 function renderUpdateTimestamp() {
   const buildVersion = new URLSearchParams(window.location.search).get("build");
   const viewedAt = new Date();
-  const viewedAtText = viewedAt.toLocaleString([], { dateStyle: "medium", timeStyle: "medium" });
+  const viewedAtText = formatViewedAt(viewedAt);
 
   els.updateTimestamp.textContent = buildVersion
     ? `Updated: ${viewedAtText} (build ${buildVersion})`
