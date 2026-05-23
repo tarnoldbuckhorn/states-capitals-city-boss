@@ -154,44 +154,14 @@ body {
 }
 
 .heart {
-  --heart-fill: var(--danger);
-  --heart-border: #7d2028;
-  width: 18px;
-  height: 18px;
-  position: relative;
-  background: var(--heart-fill);
-  border: 1px solid var(--heart-border);
-  border-radius: 3px 3px 5px 5px;
-  transform: rotate(45deg);
-  transform-origin: center;
-  margin: 4px 5px 2px 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-.heart::before,
-.heart::after {
-  content: "";
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  background: var(--heart-fill);
-  border: 1px solid var(--heart-border);
-  border-radius: 50%;
-}
-
-.heart::before {
-  left: -1px;
-  top: -10px;
-}
-
-.heart::after {
-  left: -10px;
-  top: -1px;
+  color: var(--danger);
+  font-size: 18px;
+  line-height: 1;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 .heart.empty {
-  --heart-fill: #5d6778;
-  --heart-border: #2f3948;
+  color: #5d6778;
 }
 
 .panels {
