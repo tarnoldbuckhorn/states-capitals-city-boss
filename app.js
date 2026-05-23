@@ -58,17 +58,17 @@ const STATE_SHAPES = [
   {
     state: "California",
     viewBox: "0 0 100 120",
-    path: "M28 8 L52 10 L60 28 L52 52 L72 108 L46 112 L30 86 L20 56 L14 30 Z"
+    path: "M22 8 L50 10 L60 22 L54 44 L58 68 L72 104 L52 114 L38 90 L28 70 L20 44 L12 30 Z"
   },
   {
     state: "Texas",
     viewBox: "0 0 120 100",
-    path: "M12 20 L48 12 L82 26 L96 46 L86 70 L100 86 L74 92 L50 78 L34 90 L18 68 L24 44 Z"
+    path: "M12 24 L44 16 L68 16 L84 26 L100 26 L104 48 L88 52 L94 70 L78 86 L62 76 L52 90 L36 82 L28 66 L14 56 Z"
   },
   {
     state: "Florida",
     viewBox: "0 0 120 100",
-    path: "M18 28 L54 24 L88 34 L96 50 L84 56 L104 68 L96 86 L72 74 L54 64 L34 52 L18 44 Z"
+    path: "M12 30 L40 24 L66 28 L82 36 L86 46 L76 50 L88 60 L102 74 L94 86 L80 78 L70 66 L58 58 L46 46 L24 42 Z"
   },
   {
     state: "Colorado",
@@ -78,12 +78,27 @@ const STATE_SHAPES = [
   {
     state: "Michigan",
     viewBox: "0 0 120 110",
-    path: "M18 24 L44 16 L62 28 L58 52 L40 64 L22 52 Z M70 38 L98 36 L108 54 L96 74 L74 76 L66 56 Z"
+    path: "M22 20 L40 12 L54 22 L52 38 L60 52 L46 66 L32 56 L26 40 Z M68 42 L90 38 L104 50 L98 72 L76 76 L66 60 Z"
   },
   {
     state: "Alaska",
     viewBox: "0 0 120 90",
-    path: "M10 40 L30 18 L68 12 L102 30 L110 56 L86 78 L44 72 L18 56 Z"
+    path: "M8 44 L24 30 L46 28 L66 18 L88 20 L106 34 L112 50 L94 58 L82 72 L56 74 L40 66 L24 70 L14 58 Z"
+  },
+  {
+    state: "Arizona",
+    viewBox: "0 0 120 90",
+    path: "M16 20 L88 16 L102 26 L96 72 L28 78 L12 64 Z"
+  },
+  {
+    state: "Indiana",
+    viewBox: "0 0 90 120",
+    path: "M24 12 L66 12 L64 24 L68 44 L64 66 L68 90 L62 108 L24 106 L20 84 L24 60 L20 38 Z"
+  },
+  {
+    state: "New Jersey",
+    viewBox: "0 0 90 120",
+    path: "M44 10 L58 20 L52 32 L62 44 L54 58 L60 72 L52 84 L56 98 L42 110 L30 100 L34 82 L24 66 L30 48 L24 30 L34 18 Z"
   }
 ];
 
