@@ -332,17 +332,37 @@ button.choice.wrong {
   display: grid;
   place-items: center;
   border: 1px solid var(--border);
-  background: #2a394a;
-  font-size: 20px;
-  font-weight: 800;
+  background: linear-gradient(170deg, #31465c 0%, #243548 100%);
+  font-size: 27px;
+  line-height: 1;
   border-radius: 10px;
   box-shadow: 0 8px 18px var(--shadow);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0));
 }
 
 .tile.empty {
   background: #1a2430;
   color: #4f657a;
+}
+
+.tile.empty::before {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4f657a;
+  box-shadow: 0 0 0 3px rgba(79, 101, 122, 0.18);
 }
 
 .tile.selected {

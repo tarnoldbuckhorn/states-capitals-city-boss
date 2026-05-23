@@ -168,11 +168,15 @@ const BOSSES = {
 };
 
 const BUILDINGS = [
-  { id: "house", name: "House", icon: "H", cost: 10, bonus: "Adds cozy vibes. Helps your streak feel safe." },
-  { id: "school", name: "School", icon: "S", cost: 20, bonus: "Boosts study power. Perfect for quiz focus." },
-  { id: "park", name: "Park", icon: "P", cost: 15, bonus: "Adds green space. Calms boss battles." },
-  { id: "library", name: "Librarium", icon: "L", cost: 25, bonus: "Stacks knowledge. Improves hint power." },
-  { id: "forge", name: "Forge", icon: "F", cost: 30, bonus: "Forges coins. Hot sparks of progress." }
+  { id: "house", name: "Townhouse", icon: "🏠", cost: 10, bonus: "Adds cozy vibes. Helps your streak feel safe." },
+  { id: "apartment", name: "Apartments", icon: "🏢", cost: 18, bonus: "High-density homes that make your city feel alive." },
+  { id: "school", name: "School", icon: "🏫", cost: 20, bonus: "Boosts study power. Perfect for quiz focus." },
+  { id: "market", name: "Market", icon: "🛍️", cost: 16, bonus: "Bustling shops bring energy and commerce downtown." },
+  { id: "park", name: "Park", icon: "🌳", cost: 15, bonus: "Adds green space. Calms boss battles." },
+  { id: "hospital", name: "Hospital", icon: "🏥", cost: 28, bonus: "A city staple that keeps your residents battle-ready." },
+  { id: "library", name: "Librarium", icon: "📚", cost: 25, bonus: "Stacks knowledge. Improves hint power." },
+  { id: "station", name: "Transit Hub", icon: "🚉", cost: 22, bonus: "Links neighborhoods so your city feels connected." },
+  { id: "forge", name: "Forge", icon: "🏭", cost: 30, bonus: "Forges coins. Hot sparks of progress." }
 ];
 
 const els = {
@@ -382,7 +386,7 @@ function renderCity() {
     const tile = document.createElement("div");
     tile.className = "tile " + (buildingId ? "" : "empty");
     const building = BUILDINGS.find(item => item.id === buildingId);
-    tile.textContent = building ? building.icon : "·";
+    tile.textContent = building ? building.icon : "";
     tile.title = building ? `${building.name} (${building.cost} coins)` : "Empty";
     if (buildingId && state.removeMode) {
       tile.classList.add("removable");
