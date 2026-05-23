@@ -1,4 +1,4 @@
-const APP_VERSION_KEY = "blockyStatesQuestVersion";
+const APP_VERSION_KEY = "statesQuestVersion";
 
 async function checkForUpdatedBuild() {
   try {
@@ -31,7 +31,7 @@ async function checkForUpdatedBuild() {
 
 checkForUpdatedBuild();
 
-const STORAGE_KEY = "blockyStatesQuest";
+const STORAGE_KEY = "statesQuest";
 const gridSize = 6;
 
 const STATES = [
@@ -170,8 +170,8 @@ const BOSSES = {
 const BUILDINGS = [
   { id: "house", name: "House", icon: "H", cost: 10, bonus: "Adds cozy vibes. Helps your streak feel safe." },
   { id: "school", name: "School", icon: "S", cost: 20, bonus: "Boosts study power. Perfect for quiz focus." },
-  { id: "park", name: "Park", icon: "P", cost: 15, bonus: "Grows green blocks. Calms boss battles." },
-  { id: "library", name: "Librarium", icon: "L", cost: 25, bonus: "Stacks knowledge. Hint vibe intensifies." },
+  { id: "park", name: "Park", icon: "P", cost: 15, bonus: "Adds green space. Calms boss battles." },
+  { id: "library", name: "Librarium", icon: "L", cost: 25, bonus: "Stacks knowledge. Improves hint power." },
   { id: "forge", name: "Forge", icon: "F", cost: 30, bonus: "Forges coins. Hot sparks of progress." }
 ];
 
