@@ -149,13 +149,13 @@ body {
 
 .hearts {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .heart {
   color: var(--danger);
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
