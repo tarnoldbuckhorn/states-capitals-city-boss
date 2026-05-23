@@ -1,3 +1,36 @@
+const APP_VERSION_KEY = "blockyStatesQuestVersion";
+
+async function checkForUpdatedBuild() {
+  try {
+    const response = await fetch("version.json", { cache: "no-store" });
+    if (!response.ok) return;
+    const data = await response.json();
+    const deployedVersion = data?.version;
+    if (!deployedVersion) return;
+
+    const currentUrl = new URL(window.location.href);
+    const currentBuildParam = currentUrl.searchParams.get("build");
+    const storedVersion = localStorage.getItem(APP_VERSION_KEY);
+
+    if (storedVersion === deployedVersion) {
+      return;
+    }
+
+    localStorage.setItem(APP_VERSION_KEY, deployedVersion);
+
+    if (currentBuildParam === deployedVersion) {
+      return;
+    }
+
+    currentUrl.searchParams.set("build", deployedVersion);
+    window.location.replace(currentUrl.toString());
+  } catch (error) {
+    console.warn("Version check skipped:", error);
+  }
+}
+
+checkForUpdatedBuild();
+
 const STORAGE_KEY = "blockyStatesQuest";
 const gridSize = 6;
 
