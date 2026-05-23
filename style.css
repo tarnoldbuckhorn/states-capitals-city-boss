@@ -1,14 +1,14 @@
 :root {
-  --bg: #0e1116;
-  --panel: #1c222b;
-  --panel-light: #262f3b;
-  --accent: #64d368;
-  --accent-dark: #3cae3f;
-  --danger: #f55a5a;
-  --text: #f5f3e9;
-  --muted: #9aa6b2;
-  --border: #0b0d12;
-  --shadow: rgba(0, 0, 0, 0.5);
+  --bg: #0c1424;
+  --panel: #172338;
+  --panel-light: #20304b;
+  --accent: #6ad39d;
+  --accent-dark: #4abf84;
+  --danger: #f46b6b;
+  --text: #edf2ff;
+  --muted: #a8b6cf;
+  --border: rgba(255, 255, 255, 0.12);
+  --shadow: rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -27,22 +27,8 @@ body {
 .skyline {
   position: fixed;
   inset: 0;
-  background:
-    linear-gradient(180deg, rgba(24, 35, 48, 0.9), rgba(10, 14, 20, 0.95)),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.06) 0,
-      rgba(255, 255, 255, 0.06) 3px,
-      transparent 3px,
-      transparent 12px
-    );
+  background: radial-gradient(circle at 10% 10%, #1d3358 0%, #0d172a 45%, #09111f 100%);
   z-index: -2;
-  animation: drift 18s linear infinite;
-}
-
-@keyframes drift {
-  0% { background-position: 0 0, 0 0; }
-  100% { background-position: -240px 0, 120px 0; }
 }
 
 .app {
@@ -59,9 +45,9 @@ body {
   justify-content: space-between;
   background: var(--panel);
   padding: 16px;
-  border: 4px solid var(--border);
-  box-shadow: 6px 6px 0 var(--shadow);
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 32px var(--shadow);
+  border-radius: 14px;
 }
 
 .brand {
@@ -92,14 +78,15 @@ body {
 }
 
 .nav-btn {
-  border: 3px solid var(--border);
+  border: 1px solid var(--border);
   background: var(--panel-light);
   color: var(--text);
   padding: 8px 12px;
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-shadow: 0 6px 14px var(--shadow);
+  border-radius: 10px;
 }
 
 .nav-btn.active {
@@ -116,8 +103,8 @@ body {
 
 .update-timestamp {
   background: var(--panel-light);
-  border: 3px solid var(--border);
-  box-shadow: 3px 3px 0 var(--shadow);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 14px var(--shadow);
   color: #f1d87a;
   font-weight: 800;
   font-size: 12px;
@@ -135,8 +122,9 @@ body {
 
 .status-tile {
   background: var(--panel);
-  border: 3px solid var(--border);
-  box-shadow: 4px 4px 0 var(--shadow);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 20px var(--shadow);
+  border-radius: 12px;
   padding: 10px 12px;
   display: grid;
   gap: 6px;
@@ -188,8 +176,9 @@ body {
 .panel {
   display: none;
   background: var(--panel);
-  border: 4px solid var(--border);
-  box-shadow: 6px 6px 0 var(--shadow);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 30px var(--shadow);
+  border-radius: 14px;
   padding: 16px;
 }
 
@@ -213,8 +202,9 @@ body {
 
 .quiz-card {
   background: var(--panel-light);
-  border: 3px solid var(--border);
-  box-shadow: 4px 4px 0 var(--shadow);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 20px var(--shadow);
+  border-radius: 12px;
   padding: 16px;
   display: grid;
   gap: 12px;
