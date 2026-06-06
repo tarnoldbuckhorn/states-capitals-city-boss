@@ -311,19 +311,32 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
   --rise: 60px;
   --building-color: #76d6ff;
   --building-trim: #ffffff;
+  --foundation-color: rgba(12, 24, 36, 0.48);
   position: absolute;
   inset: 13px;
   transform-style: preserve-3d;
-  transform: translateZ(1px);
+  transform: translateZ(0);
 }
-.building-model::before {
+.building-model::before,
+.building-model::after {
   content: "";
   position: absolute;
-  inset: -4px;
-  transform: translateZ(0);
-  border-radius: 11px;
-  background: radial-gradient(ellipse at center, rgba(5, 10, 24, 0.34) 0 52%, transparent 72%);
   pointer-events: none;
+}
+.building-model::before {
+  inset: -7px;
+  transform: translateZ(0.25px);
+  border-radius: 13px;
+  background: radial-gradient(ellipse at center, rgba(5, 10, 24, 0.56) 0 58%, transparent 74%);
+}
+.building-model::after {
+  inset: -3px;
+  transform: translateZ(1px);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 44%),
+    linear-gradient(160deg, var(--foundation-color), rgba(7, 14, 24, 0.62));
+  box-shadow: 0 3px 0 rgba(6, 12, 24, 0.44), 0 7px 12px rgba(0, 0, 0, 0.28);
 }
 .building-face { position: absolute; display: block; border: 1px solid rgba(255, 255, 255, 0.2); backface-visibility: hidden; }
 .building-face.front {
