@@ -32,8 +32,6 @@ async function checkForUpdatedBuild() {
 checkForUpdatedBuild();
 
 const STORAGE_KEY = "statesQuest";
-const gridSize = 6;
-
 const STATES = [
   { state: "Alabama", capital: "Montgomery", region: "South" },
   { state: "Alaska", capital: "Juneau", region: "West" },
@@ -167,72 +165,10 @@ const BOSSES = {
   }
 };
 
-const BUILDINGS = [
-  { id: "house", name: "Townhouse", icon: "🏠", cost: 10, sign: "HOME", bonus: "Adds cozy vibes. Helps your streak feel safe." },
-  { id: "apartment", name: "Apartments", icon: "🏢", cost: 18, sign: "APTS", bonus: "High-density homes that make your city feel alive." },
-  { id: "school", name: "School", icon: "🏫", cost: 20, sign: "FACULTY", bonus: "Boosts study power. Perfect for quiz focus." },
-  { id: "market", name: "Market", icon: "🛍️", cost: 16, sign: "MARKET", bonus: "Bustling shops bring energy and commerce downtown." },
-  { id: "park", name: "Park", icon: "🌳", cost: 15, sign: "PARK", bonus: "Adds green space. Calms boss battles." },
-  { id: "hospital", name: "Hospital", icon: "🏥", cost: 28, sign: "CLINIC", bonus: "A city staple that keeps your residents battle-ready." },
-  { id: "library", name: "Librarium", icon: "📚", cost: 25, sign: "LIBRARY", bonus: "Stacks knowledge. Improves hint power." },
-  { id: "station", name: "Transit Hub", icon: "🚉", cost: 22, sign: "TRANSIT", bonus: "Links neighborhoods so your city feels connected." },
-  { id: "forge", name: "Forge", icon: "🏭", cost: 30, sign: "FACTORY", bonus: "Forges coins. Hot sparks of progress." },
-  { id: "museum", name: "Museum", icon: "🏛️", cost: 24, sign: "MUSEUM", bonus: "Displays badges and turns facts into class conversation starters." },
-  { id: "rocket", name: "Launch Pad", icon: "🚀", cost: 35, sign: "LAUNCH", bonus: "A silly field-trip launcher for big quiz streak celebrations." },
-  { id: "arcade", name: "Arcade", icon: "🕹️", cost: 26, sign: "ARCADE", bonus: "Adds extra sparkle for kids who love game-style rewards." }
-];
-
-
-const BUILDING_3D_STYLES = {
-  house: { height: 46, color: "#ffb45f", trim: "#ffe0a4" },
-  apartment: { height: 94, color: "#6ec6ff", trim: "#d7f4ff" },
-  school: { height: 62, color: "#ffcf5b", trim: "#fff0a8" },
-  market: { height: 54, color: "#ff8cd8", trim: "#ffd6f1" },
-  park: { height: 34, color: "#55d985", trim: "#caffd7" },
-  hospital: { height: 76, color: "#f8f8ff", trim: "#ff7474" },
-  library: { height: 68, color: "#b58cff", trim: "#eadbff" },
-  station: { height: 60, color: "#76d6ff", trim: "#e0f7ff" },
-  forge: { height: 88, color: "#8d99ae", trim: "#ff9d4d" },
-  museum: { height: 58, color: "#f1d49b", trim: "#fff4d8" },
-  rocket: { height: 110, color: "#ff7474", trim: "#ffffff" },
-  arcade: { height: 66, color: "#8d7dff", trim: "#7df5a8" }
-};
-
-const TILE_TOP_Z = 0;
-const BUILDING_GROUNDING_EPSILON_Z = 0;
-
-function getBuildingAssetBounds(building) {
-  const style = BUILDING_3D_STYLES[building.id] || { height: 60 };
-
-  // CSS 3D assets can have pivots that do not match the visible geometry.
-  // Placement must therefore be derived from the visible solid bounds: minZ is
-  // the underside of the building/foundation, maxZ is the top of the roof.
-  // If a model's pivot is later moved to its center or below the mesh, encode
-  // that offset here (for example, a centered pivot would use minZ = -height / 2).
-  return {
-    minZ: 0,
-    maxZ: style.height
-  };
-}
-
-function getBuildingWorldBounds(building) {
-  const assetBounds = getBuildingAssetBounds(building);
-
-  return {
-    ...assetBounds,
-    tileTopZ: TILE_TOP_Z
-  };
-}
-
-function getGroundedBuildingTranslateZ(building) {
-  const bounds = getBuildingWorldBounds(building);
-  return bounds.tileTopZ - bounds.minZ + BUILDING_GROUNDING_EPSILON_Z;
-}
 
 const BADGES = [
   { id: "starter", icon: "🌟", name: "Starter Star", test: game => game.totalCorrect >= 5, next: "Answer 5 correct" },
   { id: "streak", icon: "🔥", name: "Streak Spark", test: game => game.streak >= 5, next: "Reach a 5-answer streak" },
-  { id: "builder", icon: "🏗️", name: "City Builder", test: game => game.city.filter(Boolean).length >= 5, next: "Build 5 city tiles" },
   { id: "boss", icon: "🐉", name: "Boss Ready", test: game => game.totalCorrect >= 10, next: "Answer 10 correct" },
   { id: "scholar", icon: "🎓", name: "Capital Scholar", test: game => game.totalCorrect >= 25, next: "Answer 25 correct" }
 ];
@@ -268,7 +204,7 @@ const RANKS = [
 ];
 
 const els = {
-  coins: document.getElementById("coins"),
+  points: document.getElementById("points"),
   streak: document.getElementById("streak"),
   hintTokens: document.getElementById("hintTokens"),
   bossName: document.getElementById("bossName"),
@@ -280,15 +216,6 @@ const els = {
   result: document.getElementById("result"),
   quizCard: document.getElementById("quizCard"),
   hintMessage: document.getElementById("hintMessage"),
-  cityViewport: document.getElementById("cityViewport"),
-  city: document.getElementById("city"),
-  cityTiltDown: document.getElementById("cityTiltDown"),
-  cityTiltUp: document.getElementById("cityTiltUp"),
-  cityRotateLeft: document.getElementById("cityRotateLeft"),
-  cityRotateRight: document.getElementById("cityRotateRight"),
-  cityResetCamera: document.getElementById("cityResetCamera"),
-  shop: document.getElementById("shop"),
-  selectedBuilding: document.getElementById("selectedBuilding"),
   bossTitle: document.getElementById("bossTitle"),
   bossFlavor: document.getElementById("bossFlavor"),
   bossAttack: document.getElementById("bossAttack"),
@@ -309,7 +236,6 @@ const els = {
   updateTimestamp: document.getElementById("updateTimestamp"),
   resetGame: document.getElementById("resetGame"),
   stateShape: document.getElementById("stateShape"),
-  removeModeBtn: document.getElementById("removeModeBtn"),
   dailyQuest: document.getElementById("dailyQuest"),
   rankTitle: document.getElementById("rankTitle"),
   nextBadge: document.getElementById("nextBadge"),
@@ -325,8 +251,6 @@ const els = {
 
 let currentQuestion = null;
 let audioContext = null;
-const cityCamera = { tilt: 58, rotation: -36, zoom: 1 };
-const cityDrag = { active: false, moved: false, justMoved: false, startX: 0, startY: 0, startTilt: 58, startRotation: -36 };
 const miniGame = {
   active: false,
   intervalId: null,
@@ -362,7 +286,7 @@ function renderUpdateTimestamp() {
 
 function defaultState() {
   return {
-    coins: 0,
+    points: 0,
     streak: 0,
     youHp: 5,
     maxHp: 5,
@@ -371,10 +295,7 @@ function defaultState() {
     questionMode: "mixed",
     hintTokens: 0,
     totalCorrect: 0,
-    selectedBuilding: null,
-    removeMode: false,
-    soundOn: true,
-    city: Array(gridSize * gridSize).fill(null)
+    soundOn: true
   };
 }
 
@@ -383,6 +304,10 @@ function loadState() {
   if (!raw) return defaultState();
   try {
     const parsed = JSON.parse(raw);
+    if (parsed.points === undefined && parsed.coins !== undefined) {
+      parsed.points = parsed.coins;
+    }
+    delete parsed.coins;
     return { ...defaultState(), ...parsed };
   } catch (error) {
     console.warn("Save data reset:", error);
@@ -391,12 +316,6 @@ function loadState() {
 }
 
 let state = loadState();
-if (!Array.isArray(state.city) || state.city.length !== gridSize * gridSize) {
-  state.city = Array(gridSize * gridSize).fill(null);
-}
-if (state.selectedBuilding && !BUILDINGS.some(item => item.id === state.selectedBuilding)) {
-  state.selectedBuilding = null;
-}
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -544,7 +463,7 @@ function renderHearts(container, current, max) {
 }
 
 function updateHud() {
-  els.coins.textContent = state.coins;
+  els.points.textContent = state.points;
   els.streak.textContent = state.streak;
   els.hintTokens.textContent = state.hintTokens;
   els.bossName.textContent = state.boss.active ? state.boss.name : "None";
@@ -558,8 +477,6 @@ function updateHud() {
   renderProgressBoard();
   els.hintBtn.disabled = state.hintTokens === 0 || (currentQuestion && currentQuestion.hintUsed);
   els.bossViewBtn.classList.toggle("hidden", !state.boss.active);
-  els.removeModeBtn.textContent = `Remove Mode: ${state.removeMode ? "On" : "Off"}`;
-  els.removeModeBtn.classList.toggle("active", state.removeMode);
 }
 
 function updateBossPanel(message = null) {
@@ -598,181 +515,6 @@ function updateBossPrompt() {
   } else {
     els.bossPrompt.textContent = `Boss Challenge: Capital: ${currentQuestion.capital} — Which state is it?`;
   }
-}
-
-function updateCityCamera() {
-  els.city.style.setProperty("--city-tilt", `${cityCamera.tilt}deg`);
-  els.city.style.setProperty("--city-rotation", `${cityCamera.rotation}deg`);
-  els.city.style.setProperty("--city-zoom", cityCamera.zoom.toFixed(2));
-}
-
-function clampCityCamera() {
-  cityCamera.tilt = Math.min(Math.max(cityCamera.tilt, 38), 72);
-  cityCamera.rotation = ((cityCamera.rotation + 180) % 360 + 360) % 360 - 180;
-  cityCamera.zoom = Math.min(Math.max(cityCamera.zoom, 0.82), 1.18);
-}
-
-function nudgeCityCamera({ tilt = 0, rotation = 0, zoom = 0 }) {
-  cityCamera.tilt += tilt;
-  cityCamera.rotation += rotation;
-  cityCamera.zoom += zoom;
-  clampCityCamera();
-  updateCityCamera();
-}
-
-function makeBuildingModel(building, index) {
-  const style = BUILDING_3D_STYLES[building.id] || { height: 60, color: "#76d6ff", trim: "#ffffff" };
-  const buildingModel = document.createElement("div");
-  buildingModel.className = `building-model building-${building.id}`;
-  const groundingZ = getGroundedBuildingTranslateZ(building);
-  const groundingBounds = getBuildingWorldBounds(building);
-  buildingModel.style.setProperty("--rise", `${style.height}px`);
-  buildingModel.style.setProperty("--building-color", style.color);
-  buildingModel.style.setProperty("--building-trim", style.trim);
-  buildingModel.style.setProperty("--grounding-z", `${groundingZ}px`);
-  buildingModel.style.setProperty("--window-delay", `${(index % gridSize) * 0.17}s`);
-  buildingModel.dataset.bottomZ = (groundingBounds.minZ + groundingZ).toFixed(3);
-  buildingModel.dataset.tileTopZ = groundingBounds.tileTopZ.toFixed(3);
-
-  ["front", "right", "back", "left", "roof"].forEach(side => {
-    const face = document.createElement("span");
-    face.className = `building-face ${side}`;
-    if (side !== "roof") {
-      face.dataset.sign = building.sign || building.name.toUpperCase();
-    }
-    buildingModel.appendChild(face);
-  });
-
-  return buildingModel;
-}
-
-function renderCity() {
-  els.city.innerHTML = "";
-  els.city.classList.toggle("remove-mode", state.removeMode);
-  updateCityCamera();
-  state.city.forEach((buildingId, index) => {
-    const tile = document.createElement("button");
-    tile.type = "button";
-    tile.className = "tile " + (buildingId ? "city-lot" : "empty");
-    const building = BUILDINGS.find(item => item.id === buildingId);
-    tile.setAttribute("aria-label", building ? `${building.name} city lot` : `Empty city lot ${index + 1}`);
-    tile.title = building ? `${building.name} (${building.cost} coins)` : "Empty lot";
-    if (building) {
-      tile.classList.add(`has-${building.id}`);
-      tile.appendChild(makeBuildingModel(building, index));
-    } else {
-      const lotMark = document.createElement("span");
-      lotMark.className = "empty-lot-mark";
-      lotMark.textContent = "+";
-      tile.appendChild(lotMark);
-    }
-    if (buildingId && state.removeMode) {
-      tile.classList.add("removable");
-      tile.title = `Remove ${building.name}`;
-    }
-    if (!buildingId && state.selectedBuilding) {
-      tile.classList.add("selected");
-    }
-    tile.addEventListener("click", () => {
-      if (cityDrag.justMoved) return;
-      if (state.removeMode) {
-        tryRemoveBuilding(index);
-      } else {
-        tryPlaceBuilding(index);
-      }
-    });
-    els.city.appendChild(tile);
-  });
-}
-
-function renderShop() {
-  els.shop.innerHTML = "";
-  BUILDINGS.forEach(building => {
-    const card = document.createElement("div");
-    card.className = "shop-card tooltip";
-    card.dataset.tooltip = building.bonus;
-
-    const title = document.createElement("div");
-    title.textContent = `${building.icon} ${building.name}`;
-    title.className = "value";
-
-    const cost = document.createElement("div");
-    cost.textContent = `${building.cost} coins`;
-    cost.className = "panel-description";
-
-    const button = document.createElement("button");
-    button.textContent = state.selectedBuilding === building.id ? "Selected" : "Select";
-    button.disabled = state.selectedBuilding === building.id;
-    button.addEventListener("click", () => selectBuilding(building.id));
-
-    card.appendChild(title);
-    card.appendChild(cost);
-    card.appendChild(button);
-    els.shop.appendChild(card);
-  });
-}
-
-function updateSelectedBuildingStatus() {
-  if (state.removeMode) {
-    els.selectedBuilding.textContent = "Remove mode active: click a placed block to delete it.";
-    return;
-  }
-  const building = BUILDINGS.find(item => item.id === state.selectedBuilding);
-  els.selectedBuilding.textContent = building
-    ? `Selected: ${building.name} (${building.cost} coins)`
-    : "Select a building in the Shop.";
-}
-
-function selectBuilding(buildingId) {
-  state.selectedBuilding = buildingId;
-  state.removeMode = false;
-  updateSelectedBuildingStatus();
-  renderShop();
-  renderCity();
-  saveState();
-}
-
-function toggleRemoveMode() {
-  state.removeMode = !state.removeMode;
-  updateSelectedBuildingStatus();
-  renderCity();
-  saveState();
-}
-
-function tryPlaceBuilding(index) {
-  if (state.city[index]) return;
-  if (!state.selectedBuilding) {
-    els.result.textContent = "Pick a building in the Shop before placing blocks.";
-    return;
-  }
-  const building = BUILDINGS.find(item => item.id === state.selectedBuilding);
-  if (!building) return;
-  if (state.coins < building.cost) {
-    els.result.textContent = "Not enough coins. Answer questions to earn more.";
-    return;
-  }
-  state.coins -= building.cost;
-  state.city[index] = building.id;
-  els.result.textContent = `Built ${building.name}! (-${building.cost} coins)`;
-  createConfettiBurst(els.city);
-  updateHud();
-  renderCity();
-  saveState();
-}
-
-function tryRemoveBuilding(index) {
-  if (!state.city[index]) {
-    els.result.textContent = "Nothing here yet. Click a placed block to remove it.";
-    return;
-  }
-  const building = BUILDINGS.find(item => item.id === state.city[index]);
-  state.city[index] = null;
-  els.result.textContent = building
-    ? `Removed ${building.name}.`
-    : "Removed a building.";
-  updateHud();
-  renderCity();
-  saveState();
 }
 
 function makeQuestion() {
@@ -894,7 +636,6 @@ function renderQuestion() {
   }
 
   updateHud();
-  renderCity();
   updateBossPanel();
   updateBossPrompt();
 }
@@ -1073,11 +814,11 @@ function triggerBossStrike() {
 }
 
 function handleCorrectAnswer() {
-  state.coins += 10;
+  state.points += 10;
   state.streak += 1;
   state.totalCorrect += 1;
   applyQuestionFeedback(true);
-  showFloatingText("+10", els.coins);
+  showFloatingText("+10", els.points);
   createConfettiBurst(els.quizCard);
   playTone(660);
 
@@ -1096,7 +837,7 @@ function handleCorrectAnswer() {
     }
     updateBossPanel("The boss staggers from your strike!");
   } else {
-    els.result.textContent = "Correct! Build in your city to celebrate.";
+    els.result.textContent = "Correct! Keep the streak going!";
     startBossBattle();
   }
 }
@@ -1200,62 +941,8 @@ function setActivePanel(panelKey) {
   });
 }
 
-
-function initCityCameraControls() {
-  els.cityTiltDown.addEventListener("click", () => nudgeCityCamera({ tilt: -6 }));
-  els.cityTiltUp.addEventListener("click", () => nudgeCityCamera({ tilt: 6 }));
-  els.cityRotateLeft.addEventListener("click", () => nudgeCityCamera({ rotation: -12 }));
-  els.cityRotateRight.addEventListener("click", () => nudgeCityCamera({ rotation: 12 }));
-  els.cityResetCamera.addEventListener("click", () => {
-    cityCamera.tilt = 58;
-    cityCamera.rotation = -36;
-    cityCamera.zoom = 1;
-    updateCityCamera();
-  });
-
-  els.cityViewport.addEventListener("pointerdown", event => {
-    cityDrag.active = true;
-    cityDrag.moved = false;
-    cityDrag.startX = event.clientX;
-    cityDrag.startY = event.clientY;
-    cityDrag.startTilt = cityCamera.tilt;
-    cityDrag.startRotation = cityCamera.rotation;
-    els.cityViewport.setPointerCapture(event.pointerId);
-    els.cityViewport.classList.add("dragging");
-  });
-
-  els.cityViewport.addEventListener("pointermove", event => {
-    if (!cityDrag.active) return;
-    const deltaX = event.clientX - cityDrag.startX;
-    const deltaY = event.clientY - cityDrag.startY;
-    if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) cityDrag.moved = true;
-    cityCamera.rotation = cityDrag.startRotation + deltaX * 0.28;
-    cityCamera.tilt = cityDrag.startTilt - deltaY * 0.18;
-    clampCityCamera();
-    updateCityCamera();
-  });
-
-  ["pointerup", "pointercancel", "pointerleave"].forEach(eventName => {
-    els.cityViewport.addEventListener(eventName, event => {
-      if (!cityDrag.active) return;
-      cityDrag.active = false;
-      cityDrag.justMoved = cityDrag.moved;
-      if (cityDrag.justMoved) window.setTimeout(() => { cityDrag.justMoved = false; }, 120);
-      els.cityViewport.classList.remove("dragging");
-      if (els.cityViewport.hasPointerCapture(event.pointerId)) {
-        els.cityViewport.releasePointerCapture(event.pointerId);
-      }
-    });
-  });
-
-  els.cityViewport.addEventListener("wheel", event => {
-    event.preventDefault();
-    nudgeCityCamera({ zoom: event.deltaY > 0 ? -0.04 : 0.04 });
-  }, { passive: false });
-}
-
 function resetGame() {
-  if (!confirm("Reset everything? Your city and coins will be wiped.")) return;
+  if (!confirm("Reset everything? Your points and progress will be wiped.")) return;
   state = defaultState();
   saveState();
   location.reload();
@@ -1265,10 +952,6 @@ async function init() {
   initNav();
   renderUpdateTimestamp();
   updateHud();
-  renderShop();
-  renderCity();
-  updateSelectedBuildingStatus();
-  initCityCameraControls();
   renderDailyQuest();
   renderExplorer();
   surprisePassportState();
@@ -1299,7 +982,6 @@ async function init() {
   els.resetGame.addEventListener("click", resetGame);
   els.miniStrikeBtn.addEventListener("click", handleMiniStrike);
   els.bossActionBtn.addEventListener("click", triggerBossStrike);
-  els.removeModeBtn.addEventListener("click", toggleRemoveMode);
   els.bossViewBtn.addEventListener("click", () => {
     if (!state.boss.active) return;
     setActivePanel("boss");
