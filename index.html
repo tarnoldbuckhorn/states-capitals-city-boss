@@ -17,15 +17,13 @@
         <span class="brand-icon" aria-hidden="true">🚀</span>
         <div>
           <div class="title">States Quest Arcade</div>
-          <div class="subtitle">Capitals • City Builder • Bosses • Explore</div>
+          <div class="subtitle">Capitals • Bosses • Explore</div>
         </div>
       </div>
       <nav class="nav">
         <button class="nav-btn active" data-panel="quiz">Quiz</button>
-        <button class="nav-btn" data-panel="city">City</button>
         <button class="nav-btn" data-panel="explore">Explore</button>
         <button class="nav-btn" data-panel="boss">Boss</button>
-        <button class="nav-btn" data-panel="shop">Shop</button>
         <button class="nav-btn" data-panel="settings">Settings</button>
       </nav>
       <div class="top-actions">
@@ -38,7 +36,7 @@
       <div class="mascot" aria-hidden="true">🦊</div>
       <div class="hero-copy">
         <p class="eyebrow">Welcome, geography hero!</p>
-        <h1>Power up your city by conquering every capital.</h1>
+        <h1>Level up by conquering every capital.</h1>
         <p>Answer questions, unlock badges, battle silly bosses, and explore the map without changing the official state list.</p>
       </div>
       <div class="quest-chip" id="dailyQuest">Today's quest is loading…</div>
@@ -61,8 +59,8 @@
 
     <section class="status-bar">
       <div class="status-tile">
-        <span class="label">Coins</span>
-        <span id="coins" class="value">0</span>
+        <span class="label">Points</span>
+        <span id="points" class="value">0</span>
       </div>
       <div class="status-tile">
         <span class="label">Streak</span>
@@ -103,28 +101,6 @@
           </div>
           <p id="hintMessage" class="hint-message"></p>
           <p id="result" class="result"></p>
-        </div>
-      </section>
-
-      <section id="panel-city" class="panel">
-        <div class="panel-header">
-          <h2>Your City</h2>
-          <div class="panel-actions">
-            <div class="selected-building" id="selectedBuilding">Select a building in the Shop.</div>
-            <button id="removeModeBtn" class="btn danger">Remove Mode: Off</button>
-          </div>
-        </div>
-        <p class="panel-description">Build mode: choose a structure in the Shop, then click a lot to place it. Drag the skyline to look around your 3D city, or use the camera controls.</p>
-        <div class="city-controls" aria-label="City camera controls">
-          <button id="cityTiltDown" class="btn small" type="button">Tilt Down</button>
-          <button id="cityTiltUp" class="btn small" type="button">Tilt Up</button>
-          <button id="cityRotateLeft" class="btn small" type="button">Look Left</button>
-          <button id="cityRotateRight" class="btn small" type="button">Look Right</button>
-          <button id="cityResetCamera" class="btn small" type="button">Reset View</button>
-        </div>
-        <div id="cityViewport" class="city-viewport" aria-label="3D draggable city view">
-          <div class="city-backdrop" aria-hidden="true"></div>
-          <div id="city" class="city-grid"></div>
         </div>
       </section>
 
@@ -174,16 +150,6 @@
             </div>
           </div>
         </div>
-      </section>
-
-      <section id="panel-shop" class="panel">
-        <div class="panel-header">
-          <h2>Shop</h2>
-          <div class="panel-actions">
-            <span class="panel-description">Pick a building to enter build mode.</span>
-          </div>
-        </div>
-        <div id="shop" class="shop-grid"></div>
       </section>
 
       <section id="panel-settings" class="panel">
