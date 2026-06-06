@@ -99,7 +99,7 @@ let STATE_SHAPES = [];
 const STATE_SHAPES_GEOJSON_URL =
   "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json";
 
-function polygonToPath(rings, bounds, width, height, padding) {
+function polygonToPath(rings, bounds, width = 120, height = 120, padding = 8) {
   const [minLon, minLat, maxLon, maxLat] = bounds;
   const lonSpan = Math.max(maxLon - minLon, 0.0001);
   const latSpan = Math.max(maxLat - minLat, 0.0001);
@@ -122,14 +122,31 @@ function polygonToPath(rings, bounds, width, height, padding) {
   return `${paths.map(part => `${part} Z`).join(" ")} `;
 }
 
-function geometryToShapePath(geometry) {
-  const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
-  const points = polygons.flat(2);
+function getGeometryPolygons(geometry) {
+  return geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+}
+
+function getGeometryBounds(geometries) {
+  const points = geometries.flatMap(geometry => getGeometryPolygons(geometry).flat(2));
   const lons = points.map(point => point[0]);
   const lats = points.map(point => point[1]);
-  const bounds = [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];
-  const segments = polygons.map(polygon => polygonToPath(polygon, bounds, 120, 120, 8));
-  return { viewBox: "0 0 120 120", path: segments.join(" ") };
+  return [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];
+}
+
+function geometryToShapePath(geometry, options = {}) {
+  const { width = 120, height = 120, padding = 8, bounds = getGeometryBounds([geometry]) } = options;
+  const polygons = getGeometryPolygons(geometry);
+  const segments = polygons.map(polygon => polygonToPath(polygon, bounds, width, height, padding));
+  return { viewBox: `0 0 ${width} ${height}`, path: segments.join(" ") };
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 async function loadStateShapes() {
@@ -137,15 +154,24 @@ async function loadStateShapes() {
     const response = await fetch(STATE_SHAPES_GEOJSON_URL);
     if (!response.ok) throw new Error(`Shape source unavailable (${response.status}).`);
     const data = await response.json();
-    STATE_SHAPES = data.features
-      .map(feature => {
-        const state = feature.properties?.name;
-        const geometry = feature.geometry;
-        if (!state || !isOfficialState(state) || !geometry) return null;
-        const shape = geometryToShapePath(geometry);
-        return { state, ...shape };
-      })
-      .filter(Boolean);
+    const stateFeatures = data.features.filter(feature => {
+      const state = feature.properties?.name;
+      return state && isOfficialState(state) && feature.geometry;
+    });
+    const mapBounds = getGeometryBounds(stateFeatures.map(feature => feature.geometry));
+
+    STATE_SHAPES = stateFeatures.map(feature => {
+      const state = feature.properties.name;
+      const geometry = feature.geometry;
+      const shape = geometryToShapePath(geometry);
+      const mapShape = geometryToShapePath(geometry, {
+        width: 520,
+        height: 320,
+        padding: 10,
+        bounds: mapBounds
+      });
+      return { state, ...shape, mapViewBox: mapShape.viewBox, mapPath: mapShape.path };
+    });
   } catch (error) {
     console.warn("State shapes unavailable:", error);
     STATE_SHAPES = [];
@@ -252,7 +278,8 @@ const els = {
   randomStateBtn: document.getElementById("randomStateBtn"),
   passportTitle: document.getElementById("passportTitle"),
   passportFact: document.getElementById("passportFact"),
-  regionExplorer: document.getElementById("regionExplorer")
+  regionExplorer: document.getElementById("regionExplorer"),
+  mapDisplaySelect: document.getElementById("mapDisplaySelect")
 };
 
 let currentQuestion = null;
@@ -287,6 +314,7 @@ function defaultState() {
     boss: { active: false, region: null, name: null, hp: 0, maxHp: 0, attackIndex: 0 },
     difficulty: "easy",
     questionMode: "mixed",
+    mapDisplayMode: "single-state",
     hintTokens: 0,
     totalCorrect: 0,
     soundOn: true
@@ -466,6 +494,7 @@ function updateHud() {
   els.soundToggle.textContent = `Sound: ${state.soundOn ? "On" : "Off"}`;
   els.difficultySelect.value = state.difficulty;
   els.questionModeSelect.value = state.questionMode || "mixed";
+  els.mapDisplaySelect.value = state.mapDisplayMode || "single-state";
   els.quizModeLabel.textContent = QUESTION_MODE_LABELS[state.questionMode || "mixed"];
   els.quizComboLabel.textContent = `Combo x${Math.max(1, state.streak || 0)}`;
   renderProgressBoard();
@@ -527,7 +556,9 @@ function makeQuestion() {
     const choices = new Set([answer.state]);
     while (choices.size < 4) choices.add(STATES[randInt(STATES.length)].state);
     return {
-      question: "Which state matches this shape?",
+      question: (state.mapDisplayMode || "single-state") === "us-highlight"
+        ? "Which state is colored differently on the U.S. map?"
+        : "Which state matches this shape?",
       correct: answer.state,
       choices: shuffle(Array.from(choices)),
       hintUsed: false,
@@ -599,15 +630,31 @@ function renderQuestion() {
   const isShapeQuestion = currentQuestion.mode === "shape-to-state";
 
   if (isShapeQuestion && currentQuestion.shape) {
+    const showWholeMap = (state.mapDisplayMode || "single-state") === "us-highlight";
     const { viewBox, path, state: shapeState } = currentQuestion.shape;
-    els.stateShape.innerHTML = `
-      <svg viewBox="${viewBox}" role="img" aria-label="${shapeState} shape">
-        <path d="${path}"></path>
-      </svg>
-    `;
+    if (showWholeMap) {
+      const mapPaths = STATE_SHAPES.map(shape => {
+        const className = shape.state === shapeState ? "us-state highlighted" : "us-state";
+        return `<path class="${className}" d="${shape.mapPath}"><title>${escapeHtml(shape.state)}</title></path>`;
+      }).join("");
+      els.stateShape.innerHTML = `
+        <svg viewBox="${currentQuestion.shape.mapViewBox}" role="img" aria-label="U.S. map with ${escapeHtml(shapeState)} highlighted">
+          ${mapPaths}
+        </svg>
+      `;
+      els.stateShape.classList.add("us-map");
+    } else {
+      els.stateShape.innerHTML = `
+        <svg viewBox="${viewBox}" role="img" aria-label="${escapeHtml(shapeState)} shape">
+          <path d="${path}"></path>
+        </svg>
+      `;
+      els.stateShape.classList.remove("us-map");
+    }
     els.stateShape.classList.remove("hidden");
   } else {
     els.stateShape.innerHTML = "";
+    els.stateShape.classList.remove("us-map");
     els.stateShape.classList.add("hidden");
   }
 
@@ -863,6 +910,11 @@ async function init() {
   });
   els.questionModeSelect.addEventListener("change", event => {
     state.questionMode = event.target.value;
+    saveState();
+    renderQuestion();
+  });
+  els.mapDisplaySelect.addEventListener("change", event => {
+    state.mapDisplayMode = event.target.value;
     saveState();
     renderQuestion();
   });
