@@ -348,18 +348,8 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
     linear-gradient(135deg, var(--building-trim), var(--building-color));
   box-shadow: 0 0 18px rgba(255, 216, 107, 0.18);
 }
-.building-icon {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 2;
-  font-size: 28px;
-  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.38));
-  transform: translate(-50%, -50%) translateZ(calc(var(--rise) + 10px)) rotateZ(36deg) rotateX(-58deg);
-}
 .building-park .building-face.front,
 .building-park .building-face.right { height: 22px; opacity: 0.85; }
-.building-rocket .building-icon { font-size: 34px; }
 .selected-building { font-weight: 900; }
 
 .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }

@@ -604,10 +604,6 @@ function makeBuildingModel(building, index) {
     buildingModel.appendChild(face);
   });
 
-  const icon = document.createElement("span");
-  icon.className = "building-icon";
-  icon.textContent = building.icon;
-  buildingModel.appendChild(icon);
   return buildingModel;
 }
 
