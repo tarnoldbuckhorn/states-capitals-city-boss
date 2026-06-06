@@ -84,6 +84,7 @@ const STATES = [
   { state: "Wisconsin", capital: "Madison", region: "Midwest" },
   { state: "Wyoming", capital: "Cheyenne", region: "West" }
 ];
+const STATE_NAMES = new Set(STATES.map(item => item.state));
 
 let STATE_SHAPES = [];
 const STATE_SHAPES_GEOJSON_URL =
@@ -131,7 +132,7 @@ async function loadStateShapes() {
       .map(feature => {
         const state = feature.properties?.name;
         const geometry = feature.geometry;
-        if (!state || !geometry) return null;
+        if (!state || !STATE_NAMES.has(state) || !geometry) return null;
         const shape = geometryToShapePath(geometry);
         return { state, ...shape };
       })
