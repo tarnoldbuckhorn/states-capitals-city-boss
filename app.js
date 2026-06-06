@@ -618,6 +618,38 @@ function makeQuestion() {
   };
 }
 
+function renderWholeUsMap(highlightedState) {
+  const mapShape = STATE_SHAPES.find(shape => shape.state === highlightedState) || STATE_SHAPES[0];
+  const mapPaths = STATE_SHAPES.map(shape => {
+    const className = shape.state === highlightedState ? "us-state highlighted" : "us-state";
+    return `<path class="${className}" d="${shape.mapPath}"><title>${escapeHtml(shape.state)}</title></path>`;
+  }).join("");
+
+  els.stateShape.innerHTML = `
+    <svg viewBox="${mapShape.mapViewBox}" role="img" aria-label="U.S. map with ${escapeHtml(highlightedState)} highlighted">
+      ${mapPaths}
+    </svg>
+  `;
+  els.stateShape.classList.add("us-map");
+  els.stateShape.classList.remove("hidden");
+}
+
+function renderSingleStateShape(shape) {
+  els.stateShape.innerHTML = `
+    <svg viewBox="${shape.viewBox}" role="img" aria-label="${escapeHtml(shape.state)} shape">
+      <path d="${shape.path}"></path>
+    </svg>
+  `;
+  els.stateShape.classList.remove("us-map");
+  els.stateShape.classList.remove("hidden");
+}
+
+function hideStateShape() {
+  els.stateShape.innerHTML = "";
+  els.stateShape.classList.remove("us-map");
+  els.stateShape.classList.add("hidden");
+}
+
 function renderQuestion() {
   currentQuestion = makeQuestion();
   els.question.textContent = currentQuestion.question;
@@ -628,34 +660,16 @@ function renderQuestion() {
   els.hintBtn.disabled = state.hintTokens === 0;
 
   const isShapeQuestion = currentQuestion.mode === "shape-to-state";
+  const showWholeMap = (state.mapDisplayMode || "single-state") === "us-highlight";
+  const shapeForCurrentState = currentQuestion.shape
+    || STATE_SHAPES.find(shape => shape.state === currentQuestion.state);
 
-  if (isShapeQuestion && currentQuestion.shape) {
-    const showWholeMap = (state.mapDisplayMode || "single-state") === "us-highlight";
-    const { viewBox, path, state: shapeState } = currentQuestion.shape;
-    if (showWholeMap) {
-      const mapPaths = STATE_SHAPES.map(shape => {
-        const className = shape.state === shapeState ? "us-state highlighted" : "us-state";
-        return `<path class="${className}" d="${shape.mapPath}"><title>${escapeHtml(shape.state)}</title></path>`;
-      }).join("");
-      els.stateShape.innerHTML = `
-        <svg viewBox="${currentQuestion.shape.mapViewBox}" role="img" aria-label="U.S. map with ${escapeHtml(shapeState)} highlighted">
-          ${mapPaths}
-        </svg>
-      `;
-      els.stateShape.classList.add("us-map");
-    } else {
-      els.stateShape.innerHTML = `
-        <svg viewBox="${viewBox}" role="img" aria-label="${escapeHtml(shapeState)} shape">
-          <path d="${path}"></path>
-        </svg>
-      `;
-      els.stateShape.classList.remove("us-map");
-    }
-    els.stateShape.classList.remove("hidden");
+  if (showWholeMap && shapeForCurrentState && STATE_SHAPES.length > 0) {
+    renderWholeUsMap(shapeForCurrentState.state);
+  } else if (isShapeQuestion && currentQuestion.shape) {
+    renderSingleStateShape(currentQuestion.shape);
   } else {
-    els.stateShape.innerHTML = "";
-    els.stateShape.classList.remove("us-map");
-    els.stateShape.classList.add("hidden");
+    hideStateShape();
   }
 
   if (state.difficulty === "hard" && !isShapeQuestion) {
