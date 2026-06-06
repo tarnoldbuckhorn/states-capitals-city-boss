@@ -165,9 +165,9 @@ async function loadStateShapes() {
       const geometry = feature.geometry;
       const shape = geometryToShapePath(geometry);
       const mapShape = geometryToShapePath(geometry, {
-        width: 520,
-        height: 320,
-        padding: 10,
+        width: 760,
+        height: 480,
+        padding: 6,
         bounds: mapBounds
       });
       return { state, ...shape, mapViewBox: mapShape.viewBox, mapPath: mapShape.path };
