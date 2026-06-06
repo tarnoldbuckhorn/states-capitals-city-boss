@@ -86,16 +86,10 @@ const STATES = [
   { state: "Wyoming", capital: "Cheyenne", region: "West" }
 ];
 const STATE_NAMES = new Set(STATES.map(item => item.state));
-const TERRITORY_NAMES = new Set([
-  "American Samoa",
-  "District of Columbia",
-  "Guam",
-  "Northern Mariana Islands",
-  "Puerto Rico",
-  "U.S. Virgin Islands",
-  "United States Virgin Islands",
-  "Virgin Islands"
-]);
+
+function isOfficialState(name) {
+  return STATE_NAMES.has(name);
+}
 
 if (STATES.length !== OFFICIAL_STATE_COUNT) {
   throw new Error(`Expected ${OFFICIAL_STATE_COUNT} states, but found ${STATES.length}.`);
@@ -147,7 +141,7 @@ async function loadStateShapes() {
       .map(feature => {
         const state = feature.properties?.name;
         const geometry = feature.geometry;
-        if (!state || TERRITORY_NAMES.has(state) || !STATE_NAMES.has(state) || !geometry) return null;
+        if (!state || !isOfficialState(state) || !geometry) return null;
         const shape = geometryToShapePath(geometry);
         return { state, ...shape };
       })
