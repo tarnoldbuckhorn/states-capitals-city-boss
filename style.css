@@ -340,28 +340,88 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
     linear-gradient(160deg, var(--foundation-color), rgba(7, 14, 24, 0.62));
   box-shadow: 0 3px 0 rgba(6, 12, 24, 0.44), 0 7px 12px rgba(0, 0, 0, 0.28);
 }
-.building-face { position: absolute; display: block; border: 1px solid rgba(255, 255, 255, 0.2); backface-visibility: hidden; }
-.building-face.front {
+.building-face {
+  position: absolute;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backface-visibility: visible;
+  box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.building-face::before,
+.building-face::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.building-face:not(.roof)::before {
+  inset: 9px 7px 7px;
+  background:
+    repeating-linear-gradient(90deg, rgba(229, 249, 255, 0.88) 0 5px, transparent 5px 12px),
+    repeating-linear-gradient(0deg, transparent 0 10px, rgba(255, 255, 255, 0.34) 10px 12px, transparent 12px 21px);
+  mix-blend-mode: screen;
+  opacity: 0.78;
+}
+.building-face:not(.roof)::after {
+  content: attr(data-sign);
+  left: 50%;
+  top: 4px;
+  min-width: 34px;
+  max-width: calc(100% - 8px);
+  padding: 2px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 5px;
+  background: linear-gradient(180deg, rgba(14, 20, 42, 0.96), rgba(32, 46, 86, 0.92));
+  color: #fff6a4;
+  font-size: 7px;
+  font-weight: 1000;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  transform: translateX(-50%);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.34), 0 0 10px rgba(255, 216, 107, 0.3);
+  white-space: nowrap;
+}
+.building-face.front,
+.building-face.back {
   left: 0;
   right: 0;
-  bottom: 0;
   height: var(--rise);
-  transform-origin: bottom;
-  transform: rotateX(-90deg);
   background:
-    repeating-linear-gradient(90deg, transparent 0 9px, rgba(255, 255, 255, 0.22) 9px 13px, transparent 13px 20px),
     linear-gradient(180deg, var(--building-trim), rgba(255, 255, 255, 0.08) 24%, rgba(0, 0, 0, 0.34)),
     var(--building-color);
-  box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.12);
 }
-.building-face.right {
+.building-face.front {
+  bottom: 0;
+  transform-origin: bottom;
+  transform: rotateX(-90deg);
+}
+.building-face.back {
   top: 0;
-  right: 0;
+  transform-origin: top;
+  transform: rotateX(90deg);
+  filter: brightness(0.9);
+}
+.building-face.right,
+.building-face.left {
+  top: 0;
   bottom: 0;
   width: var(--rise);
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.12)),
+    var(--building-color);
+}
+.building-face.right {
+  right: 0;
   transform-origin: right;
   transform: rotateY(90deg);
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.12)), var(--building-color);
+}
+.building-face.left {
+  left: 0;
+  transform-origin: left;
+  transform: rotateY(-90deg);
+  filter: brightness(0.92);
 }
 .building-face.roof {
   inset: 0;
@@ -401,7 +461,41 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
   box-shadow: 0 8px 0 rgba(117, 68, 35, 0.32), 0 12px 18px rgba(0, 0, 0, 0.22);
 }
 .building-park .building-face.front,
-.building-park .building-face.right { height: 22px; opacity: 0.85; }
+.building-park .building-face.right,
+.building-park .building-face.back,
+.building-park .building-face.left { height: 22px; opacity: 0.85; }
+
+.building-house .building-face:not(.roof)::after {
+  background: linear-gradient(180deg, #7b3f26, #4d2616);
+  color: #ffe0a4;
+}
+.building-market .building-face:not(.roof)::before {
+  top: 15px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0 7px, rgba(255, 216, 241, 0.85) 7px 14px),
+    repeating-linear-gradient(0deg, transparent 0 12px, rgba(255, 255, 255, 0.38) 12px 14px, transparent 14px 23px);
+}
+.building-market .building-face:not(.roof)::after {
+  background: linear-gradient(180deg, #ffec70, #e056a8);
+  color: #17203c;
+}
+.building-school .building-face:not(.roof)::after {
+  background: linear-gradient(180deg, #22345f, #152143);
+  color: #fff0a8;
+}
+.building-forge .building-face:not(.roof)::after {
+  background: linear-gradient(180deg, #2f3645, #121722);
+  color: #ffbf70;
+}
+.building-hospital .building-face:not(.roof)::after {
+  background: linear-gradient(180deg, #ffffff, #f0f3ff);
+  color: #d83434;
+}
+.building-park .building-face:not(.roof)::after {
+  background: linear-gradient(180deg, #2d8a56, #17603a);
+  color: #caffd7;
+}
+
 .selected-building { font-weight: 900; }
 
 .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
