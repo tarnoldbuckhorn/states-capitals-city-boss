@@ -145,7 +145,9 @@ button {
 .hero-copy h1 { margin: 2px 0 6px; font-size: clamp(24px, 4vw, 42px); line-height: 1; }
 .hero-copy p { margin: 0; color: var(--muted); }
 .eyebrow { color: var(--gold) !important; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 900; font-size: 12px; }
-.quest-chip { justify-self: end; max-width: 260px; padding: 14px 16px; border-radius: 18px; background: rgba(10, 16, 48, 0.55); border: 1px dashed rgba(255, 216, 107, 0.8); color: var(--gold); font-weight: 900; }
+.hero-meta { justify-self: end; display: grid; gap: 8px; max-width: 280px; }
+.quest-chip { padding: 14px 16px; border-radius: 18px; background: rgba(10, 16, 48, 0.55); border: 1px dashed rgba(255, 216, 107, 0.8); color: var(--gold); font-weight: 900; }
+.state-list-chip { padding: 9px 12px; border-radius: 999px; background: rgba(125, 245, 168, 0.18); border: 1px solid rgba(125, 245, 168, 0.48); color: var(--accent); font-size: 13px; font-weight: 900; text-align: center; text-transform: uppercase; letter-spacing: 0.6px; }
 
 .mission-board,
 .status-bar { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
@@ -224,7 +226,7 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
 
 @media (max-width: 800px) {
   .topbar, .hero-card { grid-template-columns: 1fr; flex-direction: column; align-items: flex-start; }
-  .quest-chip { justify-self: stretch; max-width: none; }
+  .hero-meta { justify-self: stretch; max-width: none; }
   .mission-card.wide { grid-column: auto; }
   .nav { width: 100%; }
 }
