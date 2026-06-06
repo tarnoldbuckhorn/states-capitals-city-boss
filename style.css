@@ -347,7 +347,7 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
   bottom: 0;
   height: var(--rise);
   transform-origin: bottom;
-  transform: rotateX(-90deg) translateY(var(--rise));
+  transform: rotateX(-90deg);
   background:
     repeating-linear-gradient(90deg, transparent 0 9px, rgba(255, 255, 255, 0.22) 9px 13px, transparent 13px 20px),
     linear-gradient(180deg, var(--building-trim), rgba(255, 255, 255, 0.08) 24%, rgba(0, 0, 0, 0.34)),
@@ -360,7 +360,7 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
   bottom: 0;
   width: var(--rise);
   transform-origin: right;
-  transform: rotateY(90deg) translateX(var(--rise));
+  transform: rotateY(90deg);
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.12)), var(--building-color);
 }
 .building-face.roof {

@@ -201,16 +201,25 @@ const BUILDING_3D_STYLES = {
 const TILE_TOP_Z = 0;
 const BUILDING_GROUNDING_EPSILON_Z = 0;
 
-function getBuildingWorldBounds(building) {
+function getBuildingAssetBounds(building) {
   const style = BUILDING_3D_STYLES[building.id] || { height: 60 };
 
-  // Grounding rule: placed buildings are centered in their tile and their lowest
-  // rendered solid surface must sit on the tile top plane. If a future asset
-  // gets a raised pivot or individual scale/rotation, include it in these bounds
-  // and keep minZ aligned with TILE_TOP_Z instead of adding visual guesses.
+  // CSS 3D assets can have pivots that do not match the visible geometry.
+  // Placement must therefore be derived from the visible solid bounds: minZ is
+  // the underside of the building/foundation, maxZ is the top of the roof.
+  // If a model's pivot is later moved to its center or below the mesh, encode
+  // that offset here (for example, a centered pivot would use minZ = -height / 2).
   return {
     minZ: 0,
-    maxZ: style.height,
+    maxZ: style.height
+  };
+}
+
+function getBuildingWorldBounds(building) {
+  const assetBounds = getBuildingAssetBounds(building);
+
+  return {
+    ...assetBounds,
     tileTopZ: TILE_TOP_Z
   };
 }
