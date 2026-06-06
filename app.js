@@ -176,7 +176,48 @@ const BUILDINGS = [
   { id: "hospital", name: "Hospital", icon: "🏥", cost: 28, bonus: "A city staple that keeps your residents battle-ready." },
   { id: "library", name: "Librarium", icon: "📚", cost: 25, bonus: "Stacks knowledge. Improves hint power." },
   { id: "station", name: "Transit Hub", icon: "🚉", cost: 22, bonus: "Links neighborhoods so your city feels connected." },
-  { id: "forge", name: "Forge", icon: "🏭", cost: 30, bonus: "Forges coins. Hot sparks of progress." }
+  { id: "forge", name: "Forge", icon: "🏭", cost: 30, bonus: "Forges coins. Hot sparks of progress." },
+  { id: "museum", name: "Museum", icon: "🏛️", cost: 24, bonus: "Displays badges and turns facts into class conversation starters." },
+  { id: "rocket", name: "Launch Pad", icon: "🚀", cost: 35, bonus: "A silly field-trip launcher for big quiz streak celebrations." },
+  { id: "arcade", name: "Arcade", icon: "🕹️", cost: 26, bonus: "Adds extra sparkle for kids who love game-style rewards." }
+];
+
+const BADGES = [
+  { id: "starter", icon: "🌟", name: "Starter Star", test: game => game.totalCorrect >= 5, next: "Answer 5 correct" },
+  { id: "streak", icon: "🔥", name: "Streak Spark", test: game => game.streak >= 5, next: "Reach a 5-answer streak" },
+  { id: "builder", icon: "🏗️", name: "City Builder", test: game => game.city.filter(Boolean).length >= 5, next: "Build 5 city tiles" },
+  { id: "boss", icon: "🐉", name: "Boss Ready", test: game => game.totalCorrect >= 10, next: "Answer 10 correct" },
+  { id: "scholar", icon: "🎓", name: "Capital Scholar", test: game => game.totalCorrect >= 25, next: "Answer 25 correct" }
+];
+
+const REGION_ICONS = {
+  West: "🏔️",
+  Midwest: "🌽",
+  South: "🎸",
+  Northeast: "🗽"
+};
+
+const REGION_FACTS = {
+  West: "The West mission covers mountains, deserts, islands, and Pacific coast capitals.",
+  Midwest: "The Midwest mission is packed with prairie, Great Lakes, and river capitals.",
+  South: "The South mission includes Gulf, Appalachian, Atlantic, and music-city capitals.",
+  Northeast: "The Northeast mission is small on the map but huge in early U.S. history."
+};
+
+const QUESTION_MODE_LABELS = {
+  mixed: "Mixed Mission",
+  capitals: "Capital Dash",
+  states: "State Match",
+  regions: "Region Rally",
+  shapes: "Shape Hunt"
+};
+
+const RANKS = [
+  { min: 0, title: "Rookie Ranger" },
+  { min: 5, title: "Map Scout" },
+  { min: 15, title: "Capital Captain" },
+  { min: 30, title: "State Superstar" },
+  { min: 50, title: "Quest Legend" }
 ];
 
 const els = {
@@ -215,7 +256,18 @@ const els = {
   updateTimestamp: document.getElementById("updateTimestamp"),
   resetGame: document.getElementById("resetGame"),
   stateShape: document.getElementById("stateShape"),
-  removeModeBtn: document.getElementById("removeModeBtn")
+  removeModeBtn: document.getElementById("removeModeBtn"),
+  dailyQuest: document.getElementById("dailyQuest"),
+  rankTitle: document.getElementById("rankTitle"),
+  nextBadge: document.getElementById("nextBadge"),
+  badgeShelf: document.getElementById("badgeShelf"),
+  quizModeLabel: document.getElementById("quizModeLabel"),
+  quizComboLabel: document.getElementById("quizComboLabel"),
+  questionModeSelect: document.getElementById("questionModeSelect"),
+  randomStateBtn: document.getElementById("randomStateBtn"),
+  passportTitle: document.getElementById("passportTitle"),
+  passportFact: document.getElementById("passportFact"),
+  regionExplorer: document.getElementById("regionExplorer")
 };
 
 let currentQuestion = null;
@@ -261,6 +313,7 @@ function defaultState() {
     maxHp: 5,
     boss: { active: false, region: null, name: null, hp: 0, maxHp: 0, attackIndex: 0 },
     difficulty: "easy",
+    questionMode: "mixed",
     hintTokens: 0,
     totalCorrect: 0,
     selectedBuilding: null,
@@ -318,6 +371,113 @@ function playTone(freq, duration = 0.15) {
   oscillator.stop(audioContext.currentTime + duration);
 }
 
+
+function getCurrentRank() {
+  return [...RANKS].reverse().find(rank => state.totalCorrect >= rank.min) || RANKS[0];
+}
+
+function getEarnedBadges() {
+  return BADGES.filter(badge => badge.test(state));
+}
+
+function getNextBadgeText() {
+  const nextBadge = BADGES.find(badge => !badge.test(state));
+  return nextBadge ? nextBadge.next : "All badges collected!";
+}
+
+function renderProgressBoard() {
+  els.rankTitle.textContent = getCurrentRank().title;
+  els.nextBadge.textContent = getNextBadgeText();
+  const earnedBadges = getEarnedBadges();
+  els.badgeShelf.innerHTML = "";
+
+  if (earnedBadges.length === 0) {
+    const empty = document.createElement("span");
+    empty.className = "empty-badge";
+    empty.textContent = "Earn your first badge with 5 correct answers!";
+    els.badgeShelf.appendChild(empty);
+    return;
+  }
+
+  earnedBadges.forEach(badge => {
+    const chip = document.createElement("span");
+    chip.className = "badge-chip";
+    chip.textContent = `${badge.icon} ${badge.name}`;
+    els.badgeShelf.appendChild(chip);
+  });
+}
+
+function getDailyQuestState() {
+  const dayIndex = Math.floor(Date.now() / 86400000) % STATES.length;
+  return STATES[dayIndex];
+}
+
+function renderDailyQuest() {
+  const questState = getDailyQuestState();
+  els.dailyQuest.textContent = `Quest Stop: ${questState.state} → ${questState.capital}`;
+}
+
+function getStateFact(item) {
+  return `${item.capital} is the capital of ${item.state}. ${REGION_FACTS[item.region]}`;
+}
+
+function showPassportState(item) {
+  els.passportTitle.textContent = `${REGION_ICONS[item.region]} ${item.state}: ${item.capital}`;
+  els.passportFact.textContent = getStateFact(item);
+}
+
+function renderExplorer() {
+  els.regionExplorer.innerHTML = "";
+  Object.keys(REGION_ICONS).forEach(region => {
+    const statesInRegion = STATES.filter(item => item.region === region);
+    const regionCard = document.createElement("section");
+    regionCard.className = "region-card";
+
+    const heading = document.createElement("h3");
+    heading.textContent = `${REGION_ICONS[region]} ${region}`;
+
+    const fact = document.createElement("p");
+    fact.className = "panel-description";
+    fact.textContent = REGION_FACTS[region];
+
+    const list = document.createElement("div");
+    list.className = "state-pill-list";
+    statesInRegion.forEach(item => {
+      const button = document.createElement("button");
+      button.className = "state-pill";
+      button.textContent = `${item.state} • ${item.capital}`;
+      button.addEventListener("click", () => showPassportState(item));
+      list.appendChild(button);
+    });
+
+    regionCard.appendChild(heading);
+    regionCard.appendChild(fact);
+    regionCard.appendChild(list);
+    els.regionExplorer.appendChild(regionCard);
+  });
+}
+
+function surprisePassportState() {
+  showPassportState(STATES[randInt(STATES.length)]);
+}
+
+function createConfettiBurst(anchorEl) {
+  const rect = anchorEl.getBoundingClientRect();
+  const symbols = ["⭐", "✨", "🎉", "🗺️", "🚀"];
+  for (let i = 0; i < 14; i += 1) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.textContent = symbols[randInt(symbols.length)];
+    piece.style.left = `${rect.left + rect.width / 2}px`;
+    piece.style.top = `${rect.top + rect.height / 2}px`;
+    piece.style.setProperty("--x", `${randInt(180) - 90}px`);
+    piece.style.setProperty("--y", `${-40 - randInt(100)}px`);
+    piece.style.animationDelay = `${i * 20}ms`;
+    els.floatLayer.appendChild(piece);
+    setTimeout(() => piece.remove(), 1200);
+  }
+}
+
 function renderHearts(container, current, max) {
   container.innerHTML = "";
   for (let i = 0; i < max; i += 1) {
@@ -337,6 +497,10 @@ function updateHud() {
   renderHearts(els.bossHearts, state.boss.hp, state.boss.maxHp || 5);
   els.soundToggle.textContent = `Sound: ${state.soundOn ? "On" : "Off"}`;
   els.difficultySelect.value = state.difficulty;
+  els.questionModeSelect.value = state.questionMode || "mixed";
+  els.quizModeLabel.textContent = QUESTION_MODE_LABELS[state.questionMode || "mixed"];
+  els.quizComboLabel.textContent = `Combo x${Math.max(1, state.streak || 0)}`;
+  renderProgressBoard();
   els.hintBtn.disabled = state.hintTokens === 0 || (currentQuestion && currentQuestion.hintUsed);
   els.bossViewBtn.classList.toggle("hidden", !state.boss.active);
   els.removeModeBtn.textContent = `Remove Mode: ${state.removeMode ? "On" : "Off"}`;
@@ -374,6 +538,8 @@ function updateBossPrompt() {
     els.bossPrompt.textContent = `Boss Challenge: State: ${currentQuestion.state} — What's the capital?`;
   } else if (currentQuestion.mode === "shape-to-state") {
     els.bossPrompt.textContent = "Boss Challenge: Match the state shape to its name (shown in the Quiz panel).";
+  } else if (currentQuestion.mode === "state-to-region") {
+    els.bossPrompt.textContent = `Boss Challenge: ${currentQuestion.state} — Which region is it in?`;
   } else {
     els.bossPrompt.textContent = `Boss Challenge: Capital: ${currentQuestion.capital} — Which state is it?`;
   }
@@ -475,6 +641,7 @@ function tryPlaceBuilding(index) {
   state.coins -= building.cost;
   state.city[index] = building.id;
   els.result.textContent = `Built ${building.name}! (-${building.cost} coins)`;
+  createConfettiBurst(els.city);
   updateHud();
   renderCity();
   saveState();
@@ -499,12 +666,15 @@ function makeQuestion() {
   const pool = state.boss.active
     ? STATES.filter(item => item.region === state.boss.region)
     : STATES;
+  const selectedMode = state.questionMode || "mixed";
   const shapePool = STATE_SHAPES.filter(shape => {
     if (!state.boss.active) return true;
     const shapeState = STATES.find(item => item.state === shape.state);
     return shapeState && shapeState.region === state.boss.region;
   });
-  const shouldAskShape = shapePool.length > 0 && Math.random() < 0.25;
+  const modeRoll = selectedMode === "mixed" ? Math.random() : 1;
+  const shouldAskShape = shapePool.length > 0 && (selectedMode === "shapes" || (selectedMode === "mixed" && modeRoll < 0.25));
+  const shouldAskRegion = selectedMode === "regions" || (selectedMode === "mixed" && modeRoll >= 0.25 && modeRoll < 0.4);
 
   if (shouldAskShape) {
     const answer = shapePool[randInt(shapePool.length)];
@@ -523,7 +693,28 @@ function makeQuestion() {
   }
 
   const answer = pool[randInt(pool.length)];
-  const askStateToCapital = Math.random() < 0.5;
+
+  if (shouldAskRegion) {
+    const choices = new Set([answer.region]);
+    const regionNames = Object.keys(REGION_ICONS);
+    while (choices.size < regionNames.length) choices.add(regionNames[randInt(regionNames.length)]);
+    return {
+      question: `Which region is ${answer.state} in?`,
+      correct: answer.region,
+      choices: shuffle(Array.from(choices)),
+      hintUsed: false,
+      mode: "state-to-region",
+      state: answer.state,
+      capital: answer.capital,
+      shape: null
+    };
+  }
+
+  const askStateToCapital = selectedMode === "capitals"
+    ? true
+    : selectedMode === "states"
+      ? false
+      : Math.random() < 0.5;
 
   let question;
   let correct;
@@ -774,6 +965,7 @@ function handleCorrectAnswer() {
   state.totalCorrect += 1;
   applyQuestionFeedback(true);
   showFloatingText("+10", els.coins);
+  createConfettiBurst(els.quizCard);
   playTone(660);
 
   if (state.totalCorrect % 5 === 0) {
@@ -909,6 +1101,9 @@ async function init() {
   renderShop();
   renderCity();
   updateSelectedBuildingStatus();
+  renderDailyQuest();
+  renderExplorer();
+  surprisePassportState();
   await loadStateShapes();
   renderQuestion();
 
@@ -927,6 +1122,12 @@ async function init() {
     saveState();
     renderQuestion();
   });
+  els.questionModeSelect.addEventListener("change", event => {
+    state.questionMode = event.target.value;
+    saveState();
+    renderQuestion();
+  });
+  els.randomStateBtn.addEventListener("click", surprisePassportState);
   els.resetGame.addEventListener("click", resetGame);
   els.miniStrikeBtn.addEventListener("click", handleMiniStrike);
   els.bossActionBtn.addEventListener("click", triggerBossStrike);
