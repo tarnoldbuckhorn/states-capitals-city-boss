@@ -182,6 +182,22 @@ const BUILDINGS = [
   { id: "arcade", name: "Arcade", icon: "🕹️", cost: 26, bonus: "Adds extra sparkle for kids who love game-style rewards." }
 ];
 
+
+const BUILDING_3D_STYLES = {
+  house: { height: 46, color: "#ffb45f", trim: "#ffe0a4" },
+  apartment: { height: 94, color: "#6ec6ff", trim: "#d7f4ff" },
+  school: { height: 62, color: "#ffcf5b", trim: "#fff0a8" },
+  market: { height: 54, color: "#ff8cd8", trim: "#ffd6f1" },
+  park: { height: 34, color: "#55d985", trim: "#caffd7" },
+  hospital: { height: 76, color: "#f8f8ff", trim: "#ff7474" },
+  library: { height: 68, color: "#b58cff", trim: "#eadbff" },
+  station: { height: 60, color: "#76d6ff", trim: "#e0f7ff" },
+  forge: { height: 88, color: "#8d99ae", trim: "#ff9d4d" },
+  museum: { height: 58, color: "#f1d49b", trim: "#fff4d8" },
+  rocket: { height: 110, color: "#ff7474", trim: "#ffffff" },
+  arcade: { height: 66, color: "#8d7dff", trim: "#7df5a8" }
+};
+
 const BADGES = [
   { id: "starter", icon: "🌟", name: "Starter Star", test: game => game.totalCorrect >= 5, next: "Answer 5 correct" },
   { id: "streak", icon: "🔥", name: "Streak Spark", test: game => game.streak >= 5, next: "Reach a 5-answer streak" },
@@ -233,7 +249,13 @@ const els = {
   result: document.getElementById("result"),
   quizCard: document.getElementById("quizCard"),
   hintMessage: document.getElementById("hintMessage"),
+  cityViewport: document.getElementById("cityViewport"),
   city: document.getElementById("city"),
+  cityTiltDown: document.getElementById("cityTiltDown"),
+  cityTiltUp: document.getElementById("cityTiltUp"),
+  cityRotateLeft: document.getElementById("cityRotateLeft"),
+  cityRotateRight: document.getElementById("cityRotateRight"),
+  cityResetCamera: document.getElementById("cityResetCamera"),
   shop: document.getElementById("shop"),
   selectedBuilding: document.getElementById("selectedBuilding"),
   bossTitle: document.getElementById("bossTitle"),
@@ -272,6 +294,8 @@ const els = {
 
 let currentQuestion = null;
 let audioContext = null;
+const cityCamera = { tilt: 58, rotation: -36, zoom: 1 };
+const cityDrag = { active: false, moved: false, justMoved: false, startX: 0, startY: 0, startTilt: 58, startRotation: -36 };
 const miniGame = {
   active: false,
   intervalId: null,
@@ -545,15 +569,68 @@ function updateBossPrompt() {
   }
 }
 
+function updateCityCamera() {
+  els.city.style.setProperty("--city-tilt", `${cityCamera.tilt}deg`);
+  els.city.style.setProperty("--city-rotation", `${cityCamera.rotation}deg`);
+  els.city.style.setProperty("--city-zoom", cityCamera.zoom.toFixed(2));
+}
+
+function clampCityCamera() {
+  cityCamera.tilt = Math.min(Math.max(cityCamera.tilt, 38), 72);
+  cityCamera.rotation = ((cityCamera.rotation + 180) % 360 + 360) % 360 - 180;
+  cityCamera.zoom = Math.min(Math.max(cityCamera.zoom, 0.82), 1.18);
+}
+
+function nudgeCityCamera({ tilt = 0, rotation = 0, zoom = 0 }) {
+  cityCamera.tilt += tilt;
+  cityCamera.rotation += rotation;
+  cityCamera.zoom += zoom;
+  clampCityCamera();
+  updateCityCamera();
+}
+
+function makeBuildingModel(building, index) {
+  const style = BUILDING_3D_STYLES[building.id] || { height: 60, color: "#76d6ff", trim: "#ffffff" };
+  const buildingModel = document.createElement("div");
+  buildingModel.className = `building-model building-${building.id}`;
+  buildingModel.style.setProperty("--rise", `${style.height}px`);
+  buildingModel.style.setProperty("--building-color", style.color);
+  buildingModel.style.setProperty("--building-trim", style.trim);
+  buildingModel.style.setProperty("--window-delay", `${(index % gridSize) * 0.17}s`);
+
+  ["front", "right", "roof"].forEach(side => {
+    const face = document.createElement("span");
+    face.className = `building-face ${side}`;
+    buildingModel.appendChild(face);
+  });
+
+  const icon = document.createElement("span");
+  icon.className = "building-icon";
+  icon.textContent = building.icon;
+  buildingModel.appendChild(icon);
+  return buildingModel;
+}
+
 function renderCity() {
   els.city.innerHTML = "";
   els.city.classList.toggle("remove-mode", state.removeMode);
+  updateCityCamera();
   state.city.forEach((buildingId, index) => {
-    const tile = document.createElement("div");
-    tile.className = "tile " + (buildingId ? "" : "empty");
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = "tile " + (buildingId ? "city-lot" : "empty");
     const building = BUILDINGS.find(item => item.id === buildingId);
-    tile.textContent = building ? building.icon : "";
-    tile.title = building ? `${building.name} (${building.cost} coins)` : "Empty";
+    tile.setAttribute("aria-label", building ? `${building.name} city lot` : `Empty city lot ${index + 1}`);
+    tile.title = building ? `${building.name} (${building.cost} coins)` : "Empty lot";
+    if (building) {
+      tile.classList.add(`has-${building.id}`);
+      tile.appendChild(makeBuildingModel(building, index));
+    } else {
+      const lotMark = document.createElement("span");
+      lotMark.className = "empty-lot-mark";
+      lotMark.textContent = "+";
+      tile.appendChild(lotMark);
+    }
     if (buildingId && state.removeMode) {
       tile.classList.add("removable");
       tile.title = `Remove ${building.name}`;
@@ -562,6 +639,7 @@ function renderCity() {
       tile.classList.add("selected");
     }
     tile.addEventListener("click", () => {
+      if (cityDrag.justMoved) return;
       if (state.removeMode) {
         tryRemoveBuilding(index);
       } else {
@@ -1087,6 +1165,60 @@ function setActivePanel(panelKey) {
   });
 }
 
+
+function initCityCameraControls() {
+  els.cityTiltDown.addEventListener("click", () => nudgeCityCamera({ tilt: -6 }));
+  els.cityTiltUp.addEventListener("click", () => nudgeCityCamera({ tilt: 6 }));
+  els.cityRotateLeft.addEventListener("click", () => nudgeCityCamera({ rotation: -12 }));
+  els.cityRotateRight.addEventListener("click", () => nudgeCityCamera({ rotation: 12 }));
+  els.cityResetCamera.addEventListener("click", () => {
+    cityCamera.tilt = 58;
+    cityCamera.rotation = -36;
+    cityCamera.zoom = 1;
+    updateCityCamera();
+  });
+
+  els.cityViewport.addEventListener("pointerdown", event => {
+    cityDrag.active = true;
+    cityDrag.moved = false;
+    cityDrag.startX = event.clientX;
+    cityDrag.startY = event.clientY;
+    cityDrag.startTilt = cityCamera.tilt;
+    cityDrag.startRotation = cityCamera.rotation;
+    els.cityViewport.setPointerCapture(event.pointerId);
+    els.cityViewport.classList.add("dragging");
+  });
+
+  els.cityViewport.addEventListener("pointermove", event => {
+    if (!cityDrag.active) return;
+    const deltaX = event.clientX - cityDrag.startX;
+    const deltaY = event.clientY - cityDrag.startY;
+    if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) cityDrag.moved = true;
+    cityCamera.rotation = cityDrag.startRotation + deltaX * 0.28;
+    cityCamera.tilt = cityDrag.startTilt - deltaY * 0.18;
+    clampCityCamera();
+    updateCityCamera();
+  });
+
+  ["pointerup", "pointercancel", "pointerleave"].forEach(eventName => {
+    els.cityViewport.addEventListener(eventName, event => {
+      if (!cityDrag.active) return;
+      cityDrag.active = false;
+      cityDrag.justMoved = cityDrag.moved;
+      if (cityDrag.justMoved) window.setTimeout(() => { cityDrag.justMoved = false; }, 120);
+      els.cityViewport.classList.remove("dragging");
+      if (els.cityViewport.hasPointerCapture(event.pointerId)) {
+        els.cityViewport.releasePointerCapture(event.pointerId);
+      }
+    });
+  });
+
+  els.cityViewport.addEventListener("wheel", event => {
+    event.preventDefault();
+    nudgeCityCamera({ zoom: event.deltaY > 0 ? -0.04 : 0.04 });
+  }, { passive: false });
+}
+
 function resetGame() {
   if (!confirm("Reset everything? Your city and coins will be wiped.")) return;
   state = defaultState();
@@ -1101,6 +1233,7 @@ async function init() {
   renderShop();
   renderCity();
   updateSelectedBuildingStatus();
+  initCityCameraControls();
   renderDailyQuest();
   renderExplorer();
   surprisePassportState();

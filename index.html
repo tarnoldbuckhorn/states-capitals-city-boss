@@ -114,8 +114,18 @@
             <button id="removeModeBtn" class="btn danger">Remove Mode: Off</button>
           </div>
         </div>
-        <p class="panel-description">Build mode: choose a structure in the Shop, then click a tile to place it. Toggle remove mode to delete placed buildings.</p>
-        <div id="city" class="city-grid"></div>
+        <p class="panel-description">Build mode: choose a structure in the Shop, then click a lot to place it. Drag the skyline to look around your 3D city, or use the camera controls.</p>
+        <div class="city-controls" aria-label="City camera controls">
+          <button id="cityTiltDown" class="btn small" type="button">Tilt Down</button>
+          <button id="cityTiltUp" class="btn small" type="button">Tilt Up</button>
+          <button id="cityRotateLeft" class="btn small" type="button">Look Left</button>
+          <button id="cityRotateRight" class="btn small" type="button">Look Right</button>
+          <button id="cityResetCamera" class="btn small" type="button">Reset View</button>
+        </div>
+        <div id="cityViewport" class="city-viewport" aria-label="3D draggable city view">
+          <div class="city-backdrop" aria-hidden="true"></div>
+          <div id="city" class="city-grid"></div>
+        </div>
       </section>
 
       <section id="panel-explore" class="panel">
