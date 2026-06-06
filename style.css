@@ -306,16 +306,18 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
 .empty-lot-mark { color: rgba(255, 216, 107, 0.62); font-size: 28px; font-weight: 900; transform: rotateZ(36deg) rotateX(-58deg); text-shadow: 0 4px 10px var(--shadow); }
 .tile.selected { outline: 4px dashed var(--gold); outline-offset: -8px; }
 .tile.removable { outline: 4px dashed var(--danger); outline-offset: -8px; }
+.tile:not(:disabled):hover { transform: none; }
 .city-grid.remove-mode .tile { cursor: crosshair; }
 .building-model {
   --rise: 60px;
   --building-color: #76d6ff;
   --building-trim: #ffffff;
   --foundation-color: rgba(12, 24, 36, 0.48);
+  --grounding-z: 0px;
   position: absolute;
   inset: 13px;
   transform-style: preserve-3d;
-  transform: translateZ(0);
+  transform: translateZ(var(--grounding-z));
 }
 .building-model::before,
 .building-model::after {
@@ -325,13 +327,13 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
 }
 .building-model::before {
   inset: -7px;
-  transform: translateZ(0.25px);
+  transform: translateZ(0);
   border-radius: 13px;
   background: radial-gradient(ellipse at center, rgba(5, 10, 24, 0.56) 0 58%, transparent 74%);
 }
 .building-model::after {
   inset: -3px;
-  transform: translateZ(1px);
+  transform: translateZ(0);
   border-radius: 10px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 44%),
@@ -371,7 +373,7 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
   box-shadow: 0 0 18px rgba(255, 216, 107, 0.18);
 }
 .building-house {
-  inset: 10px 12px 9px;
+  inset: 10px 12px;
 }
 .building-house::before {
   inset: -2px -4px -5px;

@@ -198,6 +198,28 @@ const BUILDING_3D_STYLES = {
   arcade: { height: 66, color: "#8d7dff", trim: "#7df5a8" }
 };
 
+const TILE_TOP_Z = 0;
+const BUILDING_GROUNDING_EPSILON_Z = 0;
+
+function getBuildingWorldBounds(building) {
+  const style = BUILDING_3D_STYLES[building.id] || { height: 60 };
+
+  // Grounding rule: placed buildings are centered in their tile and their lowest
+  // rendered solid surface must sit on the tile top plane. If a future asset
+  // gets a raised pivot or individual scale/rotation, include it in these bounds
+  // and keep minZ aligned with TILE_TOP_Z instead of adding visual guesses.
+  return {
+    minZ: 0,
+    maxZ: style.height,
+    tileTopZ: TILE_TOP_Z
+  };
+}
+
+function getGroundedBuildingTranslateZ(building) {
+  const bounds = getBuildingWorldBounds(building);
+  return bounds.tileTopZ - bounds.minZ + BUILDING_GROUNDING_EPSILON_Z;
+}
+
 const BADGES = [
   { id: "starter", icon: "🌟", name: "Starter Star", test: game => game.totalCorrect >= 5, next: "Answer 5 correct" },
   { id: "streak", icon: "🔥", name: "Streak Spark", test: game => game.streak >= 5, next: "Reach a 5-answer streak" },
@@ -593,10 +615,15 @@ function makeBuildingModel(building, index) {
   const style = BUILDING_3D_STYLES[building.id] || { height: 60, color: "#76d6ff", trim: "#ffffff" };
   const buildingModel = document.createElement("div");
   buildingModel.className = `building-model building-${building.id}`;
+  const groundingZ = getGroundedBuildingTranslateZ(building);
+  const groundingBounds = getBuildingWorldBounds(building);
   buildingModel.style.setProperty("--rise", `${style.height}px`);
   buildingModel.style.setProperty("--building-color", style.color);
   buildingModel.style.setProperty("--building-trim", style.trim);
+  buildingModel.style.setProperty("--grounding-z", `${groundingZ}px`);
   buildingModel.style.setProperty("--window-delay", `${(index % gridSize) * 0.17}s`);
+  buildingModel.dataset.bottomZ = (groundingBounds.minZ + groundingZ).toFixed(3);
+  buildingModel.dataset.tileTopZ = groundingBounds.tileTopZ.toFixed(3);
 
   ["front", "right", "roof"].forEach(side => {
     const face = document.createElement("span");
