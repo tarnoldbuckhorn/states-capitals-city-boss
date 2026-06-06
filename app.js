@@ -32,6 +32,7 @@ async function checkForUpdatedBuild() {
 checkForUpdatedBuild();
 
 const STORAGE_KEY = "statesQuest";
+const OFFICIAL_STATE_COUNT = 50;
 const STATES = [
   { state: "Alabama", capital: "Montgomery", region: "South" },
   { state: "Alaska", capital: "Juneau", region: "West" },
@@ -85,6 +86,20 @@ const STATES = [
   { state: "Wyoming", capital: "Cheyenne", region: "West" }
 ];
 const STATE_NAMES = new Set(STATES.map(item => item.state));
+const TERRITORY_NAMES = new Set([
+  "American Samoa",
+  "District of Columbia",
+  "Guam",
+  "Northern Mariana Islands",
+  "Puerto Rico",
+  "U.S. Virgin Islands",
+  "United States Virgin Islands",
+  "Virgin Islands"
+]);
+
+if (STATES.length !== OFFICIAL_STATE_COUNT) {
+  throw new Error(`Expected ${OFFICIAL_STATE_COUNT} states, but found ${STATES.length}.`);
+}
 
 let STATE_SHAPES = [];
 const STATE_SHAPES_GEOJSON_URL =
@@ -132,7 +147,7 @@ async function loadStateShapes() {
       .map(feature => {
         const state = feature.properties?.name;
         const geometry = feature.geometry;
-        if (!state || !STATE_NAMES.has(state) || !geometry) return null;
+        if (!state || TERRITORY_NAMES.has(state) || !STATE_NAMES.has(state) || !geometry) return null;
         const shape = geometryToShapePath(geometry);
         return { state, ...shape };
       })
