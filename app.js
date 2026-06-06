@@ -168,18 +168,18 @@ const BOSSES = {
 };
 
 const BUILDINGS = [
-  { id: "house", name: "Townhouse", icon: "🏠", cost: 10, bonus: "Adds cozy vibes. Helps your streak feel safe." },
-  { id: "apartment", name: "Apartments", icon: "🏢", cost: 18, bonus: "High-density homes that make your city feel alive." },
-  { id: "school", name: "School", icon: "🏫", cost: 20, bonus: "Boosts study power. Perfect for quiz focus." },
-  { id: "market", name: "Market", icon: "🛍️", cost: 16, bonus: "Bustling shops bring energy and commerce downtown." },
-  { id: "park", name: "Park", icon: "🌳", cost: 15, bonus: "Adds green space. Calms boss battles." },
-  { id: "hospital", name: "Hospital", icon: "🏥", cost: 28, bonus: "A city staple that keeps your residents battle-ready." },
-  { id: "library", name: "Librarium", icon: "📚", cost: 25, bonus: "Stacks knowledge. Improves hint power." },
-  { id: "station", name: "Transit Hub", icon: "🚉", cost: 22, bonus: "Links neighborhoods so your city feels connected." },
-  { id: "forge", name: "Forge", icon: "🏭", cost: 30, bonus: "Forges coins. Hot sparks of progress." },
-  { id: "museum", name: "Museum", icon: "🏛️", cost: 24, bonus: "Displays badges and turns facts into class conversation starters." },
-  { id: "rocket", name: "Launch Pad", icon: "🚀", cost: 35, bonus: "A silly field-trip launcher for big quiz streak celebrations." },
-  { id: "arcade", name: "Arcade", icon: "🕹️", cost: 26, bonus: "Adds extra sparkle for kids who love game-style rewards." }
+  { id: "house", name: "Townhouse", icon: "🏠", cost: 10, sign: "HOME", bonus: "Adds cozy vibes. Helps your streak feel safe." },
+  { id: "apartment", name: "Apartments", icon: "🏢", cost: 18, sign: "APTS", bonus: "High-density homes that make your city feel alive." },
+  { id: "school", name: "School", icon: "🏫", cost: 20, sign: "FACULTY", bonus: "Boosts study power. Perfect for quiz focus." },
+  { id: "market", name: "Market", icon: "🛍️", cost: 16, sign: "MARKET", bonus: "Bustling shops bring energy and commerce downtown." },
+  { id: "park", name: "Park", icon: "🌳", cost: 15, sign: "PARK", bonus: "Adds green space. Calms boss battles." },
+  { id: "hospital", name: "Hospital", icon: "🏥", cost: 28, sign: "CLINIC", bonus: "A city staple that keeps your residents battle-ready." },
+  { id: "library", name: "Librarium", icon: "📚", cost: 25, sign: "LIBRARY", bonus: "Stacks knowledge. Improves hint power." },
+  { id: "station", name: "Transit Hub", icon: "🚉", cost: 22, sign: "TRANSIT", bonus: "Links neighborhoods so your city feels connected." },
+  { id: "forge", name: "Forge", icon: "🏭", cost: 30, sign: "FACTORY", bonus: "Forges coins. Hot sparks of progress." },
+  { id: "museum", name: "Museum", icon: "🏛️", cost: 24, sign: "MUSEUM", bonus: "Displays badges and turns facts into class conversation starters." },
+  { id: "rocket", name: "Launch Pad", icon: "🚀", cost: 35, sign: "LAUNCH", bonus: "A silly field-trip launcher for big quiz streak celebrations." },
+  { id: "arcade", name: "Arcade", icon: "🕹️", cost: 26, sign: "ARCADE", bonus: "Adds extra sparkle for kids who love game-style rewards." }
 ];
 
 
@@ -634,9 +634,12 @@ function makeBuildingModel(building, index) {
   buildingModel.dataset.bottomZ = (groundingBounds.minZ + groundingZ).toFixed(3);
   buildingModel.dataset.tileTopZ = groundingBounds.tileTopZ.toFixed(3);
 
-  ["front", "right", "roof"].forEach(side => {
+  ["front", "right", "back", "left", "roof"].forEach(side => {
     const face = document.createElement("span");
     face.className = `building-face ${side}`;
+    if (side !== "roof") {
+      face.dataset.sign = building.sign || building.name.toUpperCase();
+    }
     buildingModel.appendChild(face);
   });
 
