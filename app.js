@@ -220,11 +220,7 @@ const els = {
   bossFlavor: document.getElementById("bossFlavor"),
   bossAttack: document.getElementById("bossAttack"),
   bossPrompt: document.getElementById("bossPrompt"),
-  bossMiniGame: document.getElementById("bossMiniGame"),
-  miniIndicator: document.getElementById("miniIndicator"),
-  miniTarget: document.getElementById("miniTarget"),
-  miniStatus: document.getElementById("miniStatus"),
-  miniStrikeBtn: document.getElementById("miniStrikeBtn"),
+  bossLearningTip: document.getElementById("bossLearningTip"),
   bossActionBtn: document.getElementById("bossActionBtn"),
   floatLayer: document.getElementById("floatLayer"),
   hintBtn: document.getElementById("hintBtn"),
@@ -251,18 +247,6 @@ const els = {
 
 let currentQuestion = null;
 let audioContext = null;
-const miniGame = {
-  active: false,
-  intervalId: null,
-  position: 0,
-  direction: 1,
-  speed: 1.8,
-  targetStart: 30,
-  targetEnd: 65,
-  locked: false
-};
-
-
 function formatViewedAt(date) {
   try {
     return new Intl.DateTimeFormat(undefined, {
@@ -486,15 +470,14 @@ function updateBossPanel(message = null) {
     els.bossAttack.textContent = "Boss attacks will show here.";
     els.bossPrompt.textContent = "Boss quiz prompts will appear when a boss arrives.";
     els.bossActionBtn.textContent = "Call Boss";
-    els.bossMiniGame.classList.add("hidden");
-    setMiniGameStatus("Wait for a boss to appear!");
-    stopMiniGame();
+    els.bossLearningTip.textContent = "Call a boss, then answer state-and-capital questions to win.";
     return;
   }
   const bossData = BOSSES[state.boss.region];
   els.bossTitle.textContent = `${state.boss.name} (${state.boss.region})`;
   els.bossFlavor.textContent = bossData.flavor;
-  els.bossActionBtn.textContent = "Boss Strike";
+  els.bossActionBtn.textContent = "Answer Boss Quiz";
+  els.bossLearningTip.textContent = `Study ${state.boss.region} states and capitals. Correct quiz answers damage ${state.boss.name}; wrong answers let the boss counter.`;
   if (message) {
     els.bossAttack.textContent = message;
   }
@@ -508,10 +491,6 @@ function updateBossPrompt() {
   }
   if (currentQuestion.mode === "state-to-capital") {
     els.bossPrompt.textContent = `Boss Challenge: State: ${currentQuestion.state} — What's the capital?`;
-  } else if (currentQuestion.mode === "shape-to-state") {
-    els.bossPrompt.textContent = "Boss Challenge: Match the state shape to its name (shown in the Quiz panel).";
-  } else if (currentQuestion.mode === "state-to-region") {
-    els.bossPrompt.textContent = `Boss Challenge: ${currentQuestion.state} — Which region is it in?`;
   } else {
     els.bossPrompt.textContent = `Boss Challenge: Capital: ${currentQuestion.capital} — Which state is it?`;
   }
@@ -521,15 +500,17 @@ function makeQuestion() {
   const pool = state.boss.active
     ? STATES.filter(item => item.region === state.boss.region)
     : STATES;
-  const selectedMode = state.questionMode || "mixed";
+  const selectedMode = state.boss.active && ["regions", "shapes"].includes(state.questionMode)
+    ? "mixed"
+    : state.questionMode || "mixed";
   const shapePool = STATE_SHAPES.filter(shape => {
     if (!state.boss.active) return true;
     const shapeState = STATES.find(item => item.state === shape.state);
     return shapeState && shapeState.region === state.boss.region;
   });
   const modeRoll = selectedMode === "mixed" ? Math.random() : 1;
-  const shouldAskShape = shapePool.length > 0 && (selectedMode === "shapes" || (selectedMode === "mixed" && modeRoll < 0.25));
-  const shouldAskRegion = selectedMode === "regions" || (selectedMode === "mixed" && modeRoll >= 0.25 && modeRoll < 0.4);
+  const shouldAskShape = !state.boss.active && shapePool.length > 0 && (selectedMode === "shapes" || (selectedMode === "mixed" && modeRoll < 0.25));
+  const shouldAskRegion = !state.boss.active && (selectedMode === "regions" || (selectedMode === "mixed" && modeRoll >= 0.25 && modeRoll < 0.4));
 
   if (shouldAskShape) {
     const answer = shapePool[randInt(shapePool.length)];
@@ -657,103 +638,6 @@ function showFloatingText(text, anchorEl) {
   setTimeout(() => float.remove(), 1100);
 }
 
-function setMiniGameStatus(message) {
-  els.miniStatus.textContent = message;
-}
-
-function resetMiniGameTarget() {
-  const width = 18 + randInt(14);
-  const start = randInt(100 - width);
-  miniGame.targetStart = start;
-  miniGame.targetEnd = start + width;
-  els.miniTarget.style.left = `${start}%`;
-  els.miniTarget.style.width = `${width}%`;
-}
-
-function updateMiniGameIndicator() {
-  if (!miniGame.active) return;
-  miniGame.position += miniGame.direction * miniGame.speed;
-  if (miniGame.position <= 0 || miniGame.position >= 100) {
-    miniGame.direction *= -1;
-    miniGame.position = Math.max(0, Math.min(100, miniGame.position));
-  }
-  els.miniIndicator.style.left = `calc(${miniGame.position}% - 6px)`;
-}
-
-function startMiniGame() {
-  if (!state.boss.active || miniGame.intervalId) return;
-  miniGame.active = true;
-  resetMiniGameTarget();
-  miniGame.position = randInt(100);
-  miniGame.direction = Math.random() < 0.5 ? -1 : 1;
-  els.miniStrikeBtn.disabled = false;
-  setMiniGameStatus("Time your strike for bonus damage!");
-  miniGame.intervalId = setInterval(updateMiniGameIndicator, 30);
-}
-
-function stopMiniGame() {
-  miniGame.active = false;
-  if (miniGame.intervalId) {
-    clearInterval(miniGame.intervalId);
-    miniGame.intervalId = null;
-  }
-  miniGame.locked = false;
-  els.miniStrikeBtn.disabled = true;
-}
-
-function clearBossBattle() {
-  state.boss = { active: false, region: null, name: null, hp: 0, maxHp: 0, attackIndex: 0 };
-  stopMiniGame();
-  updateBossPanel();
-}
-
-function handleMiniStrike() {
-  if (!state.boss.active || miniGame.locked) return;
-  miniGame.locked = true;
-  els.miniStrikeBtn.disabled = true;
-
-  const success = miniGame.position >= miniGame.targetStart && miniGame.position <= miniGame.targetEnd;
-  if (success) {
-    state.boss.hp -= 2;
-    playTone(880, 0.18);
-    setMiniGameStatus("Critical hit! The boss takes 2 damage.");
-    els.result.textContent = "Mini-game success! Bonus damage dealt.";
-    if (state.boss.hp <= 0) {
-      els.result.textContent = `${state.boss.name} shatters after your perfect strike!`;
-      clearBossBattle();
-      updateHud();
-      saveState();
-      return;
-    }
-    updateBossPanel("The boss reels from the perfect strike!");
-  } else {
-    state.youHp -= 1;
-    playTone(180, 0.2);
-    setMiniGameStatus("Missed! The boss counters for 1 damage.");
-    els.result.textContent = `${state.boss.name} counters your mistimed strike.`;
-    if (state.youHp <= 0) {
-      els.result.textContent = `${state.boss.name} wins this round. Regroup and try again!`;
-      state.youHp = state.maxHp;
-      state.streak = 0;
-      clearBossBattle();
-      updateHud();
-      saveState();
-      return;
-    }
-    updateBossPanel("The boss swats away your strike!");
-  }
-
-  updateHud();
-  saveState();
-  setTimeout(() => {
-    if (!state.boss.active) return;
-    miniGame.locked = false;
-    els.miniStrikeBtn.disabled = false;
-    resetMiniGameTarget();
-    setMiniGameStatus("Keep the spark in the zone!");
-  }, 700);
-}
-
 function startBossBattle() {
   if (state.boss.active) return;
   if (state.streak > 0 && state.streak % 10 === 0) {
@@ -795,21 +679,15 @@ function summonBossNow() {
   saveState();
 }
 
-function triggerBossStrike() {
+function startBossQuizChallenge() {
   if (!state.boss.active) {
     summonBossNow();
-    return;
   }
 
-  if (miniGame.active) {
-    setMiniGameStatus("Mini-game already running. Lock in your strike!");
-    return;
-  }
-
-  els.bossMiniGame.classList.remove("hidden");
-  startMiniGame();
-  updateBossPanel("Find the target zone and lock in your strike!");
-  els.result.textContent = `You step in to strike ${state.boss.name}.`;
+  setActivePanel("quiz");
+  renderQuestion();
+  updateBossPanel("Answer the quiz question to land a hit!");
+  els.result.textContent = `Answer a ${state.boss.region} state-and-capital question to hit ${state.boss.name}.`;
   saveState();
 }
 
@@ -980,12 +858,10 @@ async function init() {
   });
   els.randomStateBtn.addEventListener("click", surprisePassportState);
   els.resetGame.addEventListener("click", resetGame);
-  els.miniStrikeBtn.addEventListener("click", handleMiniStrike);
-  els.bossActionBtn.addEventListener("click", triggerBossStrike);
+  els.bossActionBtn.addEventListener("click", startBossQuizChallenge);
   els.bossViewBtn.addEventListener("click", () => {
     if (!state.boss.active) return;
     setActivePanel("boss");
-    triggerBossStrike();
   });
 }
 
