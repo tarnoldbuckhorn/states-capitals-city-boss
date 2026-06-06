@@ -204,13 +204,6 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
 .boss-name { font-size: 22px; font-weight: 900; }
 .boss-flavor, .boss-attack { color: var(--muted); }
 .boss-prompt { background: rgba(6, 10, 30, 0.65); border: 2px solid var(--border); border-radius: 16px; padding: 12px; font-weight: 900; color: #dbe7f3; }
-.boss-mini-game { margin-top: 6px; padding: 12px; border: 3px dashed var(--gold); border-radius: 18px; background: rgba(10, 16, 48, 0.64); display: grid; gap: 10px; }
-.mini-title { font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; font-size: 13px; }
-.mini-meter { position: relative; height: 18px; border: 1px solid var(--border); border-radius: 999px; background: #0f141b; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3); }
-.mini-target { position: absolute; top: 0; bottom: 0; background: rgba(100, 211, 104, 0.4); border-right: 2px solid rgba(100, 211, 104, 0.9); border-left: 2px solid rgba(100, 211, 104, 0.9); }
-.mini-indicator { position: absolute; top: -4px; width: 10px; height: 26px; background: var(--gold); border: 1px solid var(--border); border-radius: 999px; box-shadow: 0 6px 12px var(--shadow); }
-.mini-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.mini-status { color: var(--muted); font-weight: 900; }
 
 .float-layer { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
 .float-text { position: absolute; font-weight: 900; color: var(--gold); text-shadow: 2px 2px 0 var(--shadow); animation: floatUp 1s ease-out forwards; }
