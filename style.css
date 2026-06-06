@@ -314,7 +314,16 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
   position: absolute;
   inset: 13px;
   transform-style: preserve-3d;
-  transform: translateZ(8px);
+  transform: translateZ(1px);
+}
+.building-model::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  transform: translateZ(0);
+  border-radius: 11px;
+  background: radial-gradient(ellipse at center, rgba(5, 10, 24, 0.34) 0 52%, transparent 72%);
+  pointer-events: none;
 }
 .building-face { position: absolute; display: block; border: 1px solid rgba(255, 255, 255, 0.2); backface-visibility: hidden; }
 .building-face.front {
@@ -347,6 +356,34 @@ button.choice.wrong { background: linear-gradient(135deg, #f08a8a, #ffd0d0); }
     radial-gradient(circle at 70% 28%, rgba(255, 255, 255, 0.42) 0 6px, transparent 7px),
     linear-gradient(135deg, var(--building-trim), var(--building-color));
   box-shadow: 0 0 18px rgba(255, 216, 107, 0.18);
+}
+.building-house {
+  inset: 10px 12px 9px;
+}
+.building-house::before {
+  inset: -2px -4px -5px;
+  background: radial-gradient(ellipse at center, rgba(5, 10, 24, 0.48) 0 58%, transparent 74%);
+}
+.building-house .building-face.front {
+  background:
+    linear-gradient(90deg, transparent 0 16px, rgba(80, 47, 32, 0.72) 16px 25px, transparent 25px 100%),
+    repeating-linear-gradient(90deg, transparent 0 8px, rgba(255, 255, 255, 0.28) 8px 12px, transparent 12px 21px),
+    linear-gradient(180deg, var(--building-trim), rgba(255, 255, 255, 0.08) 30%, rgba(0, 0, 0, 0.28)),
+    var(--building-color);
+}
+.building-house .building-face.right {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 10px, rgba(255, 255, 255, 0.16) 10px 14px, transparent 14px 22px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.08)),
+    var(--building-color);
+}
+.building-house .building-face.roof {
+  inset: -5px;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 35% 26%, rgba(255, 255, 255, 0.48) 0 5px, transparent 6px),
+    linear-gradient(135deg, #ffd28a 0 42%, #ff9f54 43% 100%);
+  box-shadow: 0 8px 0 rgba(117, 68, 35, 0.32), 0 12px 18px rgba(0, 0, 0, 0.22);
 }
 .building-park .building-face.front,
 .building-park .building-face.right { height: 22px; opacity: 0.85; }
