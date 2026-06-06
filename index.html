@@ -14,15 +14,16 @@
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <span class="brand-icon">🧭</span>
+        <span class="brand-icon" aria-hidden="true">🚀</span>
         <div>
-          <div class="title">States Quest</div>
-          <div class="subtitle">Capitals • City Builder • Challenge Mode</div>
+          <div class="title">States Quest Arcade</div>
+          <div class="subtitle">Capitals • City Builder • Bosses • Explore</div>
         </div>
       </div>
       <nav class="nav">
         <button class="nav-btn active" data-panel="quiz">Quiz</button>
         <button class="nav-btn" data-panel="city">City</button>
+        <button class="nav-btn" data-panel="explore">Explore</button>
         <button class="nav-btn" data-panel="boss">Boss</button>
         <button class="nav-btn" data-panel="shop">Shop</button>
         <button class="nav-btn" data-panel="settings">Settings</button>
@@ -32,6 +33,31 @@
         <button id="soundToggle" class="btn small">Sound: On</button>
       </div>
     </header>
+
+    <section class="hero-card" aria-label="Adventure introduction">
+      <div class="mascot" aria-hidden="true">🦊</div>
+      <div class="hero-copy">
+        <p class="eyebrow">Welcome, geography hero!</p>
+        <h1>Power up your city by conquering every capital.</h1>
+        <p>Answer questions, unlock badges, battle silly bosses, and explore the map without changing the official state list.</p>
+      </div>
+      <div class="quest-chip" id="dailyQuest">Today's quest is loading…</div>
+    </section>
+
+    <section class="mission-board" aria-label="Progress missions">
+      <div class="mission-card">
+        <span class="label">Rank</span>
+        <span id="rankTitle" class="value">Rookie Ranger</span>
+      </div>
+      <div class="mission-card">
+        <span class="label">Next Badge</span>
+        <span id="nextBadge" class="value">Answer 5 correct</span>
+      </div>
+      <div class="mission-card wide">
+        <span class="label">Badges</span>
+        <div id="badgeShelf" class="badge-shelf" aria-live="polite"></div>
+      </div>
+    </section>
 
     <section class="status-bar">
       <div class="status-tile">
@@ -61,12 +87,13 @@
     <main class="panels">
       <section id="panel-quiz" class="panel active">
         <div class="panel-header">
-          <h2>Quiz Time</h2>
+          <h2>Quiz Arcade</h2>
           <div class="panel-actions">
             <button id="hintBtn" class="btn">Use Hint</button>
           </div>
         </div>
         <div class="quiz-card" id="quizCard">
+          <div class="quiz-banner"><span id="quizModeLabel">Mixed Mission</span><span id="quizComboLabel">Combo x1</span></div>
           <div id="stateShape" class="state-shape hidden" aria-hidden="true"></div>
           <div id="question" class="question">Loading…</div>
           <div id="choices" class="choices"></div>
@@ -89,6 +116,27 @@
         </div>
         <p class="panel-description">Build mode: choose a structure in the Shop, then click a tile to place it. Toggle remove mode to delete placed buildings.</p>
         <div id="city" class="city-grid"></div>
+      </section>
+
+      <section id="panel-explore" class="panel">
+        <div class="panel-header">
+          <h2>Explore the States</h2>
+          <div class="panel-actions">
+            <button id="randomStateBtn" class="btn">Surprise Me</button>
+          </div>
+        </div>
+        <p class="panel-description">Open-ended discovery mode: browse regions, collect ideas for class discussion, and jump back into quiz mode whenever you are ready.</p>
+        <div class="explore-layout">
+          <div class="passport-card" id="passportCard">
+            <div class="passport-icon" aria-hidden="true">🗺️</div>
+            <div>
+              <div class="label">Passport Stop</div>
+              <div id="passportTitle" class="passport-title">Pick a state to start exploring.</div>
+              <p id="passportFact" class="panel-description">Every state keeps its official capital from the quiz list.</p>
+            </div>
+          </div>
+          <div id="regionExplorer" class="region-explorer"></div>
+        </div>
       </section>
 
       <section id="panel-boss" class="panel">
@@ -139,6 +187,16 @@
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
               <option value="hard">Hard</option>
+            </select>
+          </label>
+          <label class="setting">
+            <span>Question Mix</span>
+            <select id="questionModeSelect">
+              <option value="mixed">Mixed Adventure</option>
+              <option value="capitals">Capitals Only</option>
+              <option value="states">States Only</option>
+              <option value="regions">Region Challenge</option>
+              <option value="shapes">Shape Hunt</option>
             </select>
           </label>
           <button id="resetGame" class="btn danger">Reset Game</button>
